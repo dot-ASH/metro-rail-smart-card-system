@@ -1,0 +1,11 @@
+- First an foremost, we need to collect required data and datasets including journey metro  transaction datasets, user profile datasets, station datasets, fare structure, user profile, security maintenance record, etc
+- Further data collection from user perspective and feedback is in order to maintain the user satisfaction and requirements.
+- Then we start analysis the data and afterwards filter out the data for advance to the system development.
+- A central server is development using the data we gather for overall data communication.
+- The Central server talks to the metro rail system, server operation & information system, system accounts, user management and the GUI application which is for user profile management and balance monitoring.
+- The user management system issue card checking for new valid user and proceed with existing user verifying fraudulent in the system. User authentication and authorization are need to be build strictly.
+- The fraudulent detection is monitored using pattern matching, anomaly detection, behavioral analysis, recognizing the machine learning models and IP address tracking.
+- Develop API and transaction gateway to handle various transaction operation such as loading funds onto smart card and deduction fare. Calculation of fare need to be done based on the predefined fare structure and the distance it covers. 
+- Develop GUI using fronted framework to monitor and track the whole user account and  balance online remotely.
+- Integrate back-end, database and frontend maintain necessary security measurement.
+- Test the smart card on-premises.
