@@ -1,5 +1,8 @@
 # OSX
-#
+
+/.obsidian/
+
+# Software
 /software/.DS_Store
 
 # Xcode
