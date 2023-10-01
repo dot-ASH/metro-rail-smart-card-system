@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "wifi",
+			"path": "wifi"
+		}
+	],
+	"settings": {}
+}

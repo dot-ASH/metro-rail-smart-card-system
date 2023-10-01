@@ -1,0 +1,80 @@
+# OSX
+#
+/software/.DS_Store
+
+# Xcode
+#
+/software/build/
+/software/*.pbxuser
+/software/!default.pbxuser
+/software/*.mode1v3
+/software/!default.mode1v3
+/software/*.mode2v3
+/software/!default.mode2v3
+/software/*.perspectivev3
+/software//software/default.perspectivev3
+/software/xcuserdata
+/software/*.xccheckout
+/software/*.moved-aside
+/software/DerivedData
+/software/*.hmap
+/software/*.ipa
+/software/*.xcuserstate
+/software/ios/.xcode.env.local
+
+# Android/IntelliJ
+#
+/software/build/
+/software/.idea
+/software/.gradle
+/software/local.properties
+/software/*.iml
+/software/*.hprof
+/software/.cxx/
+/software/*.keystore
+/software/!debug.keystore
+
+# node.js
+#
+/software/node_modules/
+/software/npm-debug.log
+/software/yarn-error.log
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
+# screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+/software/**/fastlane/report.xml
+/software/**/fastlane/Preview.html
+/software/**/fastlane/screenshots
+/software/**/fastlane/test_output
+
+# Bundle artifact
+/software/*.jsbundle
+
+# Ruby / CocoaPods
+/software/ios/Pods/
+/software/vendor/bundle/
+
+# Temporary files created by Metro to check the health of the file watcher
+/software/.metro-health-check*
+
+# testing
+/software/coverage
+/software/android/
+/software/ios/
+/software/.vscode/
+/software/.obsidian/
+/software/.bundle/
+/software/__tests__/
+/software/assets/
+
+
+# Hardware
+/hardware/wifi/.pio/
+/hardware/wifi/.vscode/
+/hardware/wifi/include/
+
