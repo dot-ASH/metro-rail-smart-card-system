@@ -12,7 +12,7 @@ interface userData {
   user_index: number;
   name: string;
   gender: string;
-  balance: number;
+  balance: string;
   token: string;
   verify_pin: string;
 }

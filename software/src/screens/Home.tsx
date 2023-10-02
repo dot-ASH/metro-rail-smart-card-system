@@ -14,6 +14,7 @@ import {
   Platform,
   UIManager,
   LayoutAnimation,
+  Image,
 } from 'react-native';
 
 import {colors} from '../style/colors';
@@ -26,6 +27,7 @@ import '../../assets/fonts/Source Code Pro SemiBold.ttf';
 import {ThemeContext} from '../context/ThemeContext';
 import {fonts} from '../style/fonts';
 import CustomModal from '../components/modules/CustomModal';
+import {decryptHash} from '../security/encryp';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -39,6 +41,7 @@ function Home({navigation}: any): JSX.Element {
   const [boxPosition, setBoxPosition] = useState('left');
   const [isHidden, setHidden] = useState(true);
   const [moduleVisible, setModuleVisible] = useState(false);
+  const [balance, setBalance] = useState('');
 
   const isDarkMode = darkMode;
 
@@ -89,8 +92,8 @@ function Home({navigation}: any): JSX.Element {
   };
   const modules = [
     {
-      title: 'Module Name',
-      text: 'they are coming for you man beware',
+      title: 'Fare Chart',
+      text: 'Know the trip fare to every destination',
       icon: 'file',
       onModulePress: (event: any) => modalNav(event),
     },
@@ -127,10 +130,6 @@ function Home({navigation}: any): JSX.Element {
       },
     },
   ];
-  useEffect(() => {
-    if (token) {
-    }
-  }, [token]);
 
   const fancify = (user_index: string): string => {
     let newString;
@@ -153,7 +152,17 @@ function Home({navigation}: any): JSX.Element {
     return fancyString;
   };
 
-  // Bottom Modal
+  const decryptBalance = async (input: string) => {
+    setBalance(await decryptHash(input));
+  };
+  useEffect(() => {
+    if (token) {
+    }
+  }, [token]);
+
+  useEffect(() => {
+    decryptBalance(user[0]?.balance);
+  });
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -193,7 +202,7 @@ function Home({navigation}: any): JSX.Element {
             <View style={{flexDirection: 'column'}}>
               <Text style={[styles.balanceLabel, textStyle]}>Balance</Text>
               <Text style={[textStyle, styles.balance]}>
-                {isHidden ? '****' : user[0]?.balance}
+                {isHidden ? '****' : balance}
               </Text>
             </View>
           </View>
@@ -241,11 +250,25 @@ function Home({navigation}: any): JSX.Element {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                 }}>
-                <Text style={{fontSize: 24}}>{'<>'}</Text>
+                <Image
+                  source={
+                    isDarkMode
+                      ? require('../../assets/logo.png')
+                      : require('../../assets/logo_light.png')
+                  }
+                  resizeMode="contain"
+                  style={{
+                    width: 50,
+                    aspectRatio: 1,
+                    position: 'relative',
+                    opacity: 0.55,
+                    marginLeft: 5,
+                  }}
+                />
                 <View style={[{marginRight: 5, opacity: isHidden ? 0.3 : 0.8}]}>
                   <IonIcon
                     name="eye"
-                    size={28}
+                    size={26}
                     color={isDarkMode ? colors.DARK : colors.LIGHT_ALT}
                     onPress={() =>
                       isHidden ? setHidden(false) : setHidden(true)
@@ -365,10 +388,11 @@ const styles = StyleSheet.create({
     left: 7,
   },
   card: {
-    padding: 35,
+    padding: 30,
+    paddingHorizontal: 35,
     justifyContent: 'space-between',
     flexDirection: 'column',
-    gap: 30,
+    gap: 20,
   },
   moduleContainer: {
     marginTop: 15,

@@ -48,7 +48,7 @@ const Splash: React.FC<SplashProp> = ({isReady, onAnimationFinish}) => {
           backgroundColor: colors.DARK,
         }}>
         <ImageBackground
-          source={require('../../assets/newSplash.png')}
+          source={require('../../assets/splash.png')}
           resizeMode="cover"
           style={{
             height: screen.height,

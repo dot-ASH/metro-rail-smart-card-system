@@ -16,7 +16,7 @@ import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import {fonts} from '../style/fonts';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {MainStackParamList} from '../navigation/MainStack';
-import {hashPin} from './Profile';
+import {compareSHA} from '../security/encryp';
 import {useUserInfo} from '../context/AuthContext';
 import CustomDialog from '../components/CustomDialog';
 import CustomAlert from '../components/CustomAlert';
@@ -69,8 +69,8 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
       setAlertText('Enter your PIN');
       return;
     }
-    const hashedPin = await hashPin(input);
-    const pinMatches = user[0].verify_pin === hashedPin;
+
+    const pinMatches = await compareSHA(input);
     if (pinMatches) {
       navigation.navigate('AppStack');
     } else {
