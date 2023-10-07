@@ -32,11 +32,10 @@ interface homeScreenProp {
 
 let letters: string[] = [];
 function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
-  const {user, setUsers, token, setToken} = useUserInfo();
+  const {darkMode} = useContext(ThemeContext);
+  const {user} = useUserInfo();
   const isDarkMode = darkMode;
   const [alert, setAlert] = useState<string | null>(null);
-  // const [letters, setLetters] = useState<string[]>(Array(5).fill('5'));
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -65,12 +64,13 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   };
 
   const verifyPin = async () => {
+    console.log(input, user[0].phn_no[0].verify_pin);
     if (!input) {
       setAlertText('Enter your PIN');
       return;
     }
 
-    const pinMatches = await compareSHA(input);
+    const pinMatches = await compareSHA(input, user[0].phn_no[0].verify_pin);
     if (pinMatches) {
       navigation.navigate('AppStack');
     } else {

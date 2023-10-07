@@ -10,13 +10,22 @@ import {
 import {useState} from 'react';
 import {colors} from '../style/colors';
 import ProgressBar from 'react-native-progress/Bar';
+import CustomDialog from './CustomDialog';
+import {SafeAreaView} from 'react-native-safe-area-context';
 interface SplashProp {
   isReady: boolean;
+  connectivity: boolean | null;
   onAnimationFinish?: () => void;
 }
-const Splash: React.FC<SplashProp> = ({isReady, onAnimationFinish}) => {
+const Splash: React.FC<SplashProp> = ({
+  isReady,
+  onAnimationFinish,
+  connectivity,
+}) => {
   const screen = Dimensions.get('screen');
   const [count, setCount] = useState(0);
+  const [dialog, setDialogue] = useState<boolean | undefined>(false);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (isReady) {
@@ -27,18 +36,45 @@ const Splash: React.FC<SplashProp> = ({isReady, onAnimationFinish}) => {
   }, [isReady, count]);
 
   useEffect(() => {
-    if (Math.round(count * 100) > 100 && onAnimationFinish) {
-      onAnimationFinish();
+    if (connectivity) {
+      if (Math.round(count * 100) > 100 && onAnimationFinish) {
+        onAnimationFinish();
+      }
     }
-  }, [count, onAnimationFinish]);
+  }, [connectivity, count, onAnimationFinish]);
 
-  return (
+  useEffect(() => {
+    console.log(connectivity);
+    if (typeof connectivity !== 'boolean') {
+      setDialogue(true);
+    }
+  }, [connectivity]);
+
+  return dialog ? (
     <>
       <StatusBar
         barStyle={'light-content'}
         backgroundColor={colors.TRANPARENT}
         translucent={true}
       />
+      <SafeAreaView style={styles.customContainer}>
+        <CustomDialog
+          isVisible={dialog}
+          title="Connectivity Issue"
+          text="No Internet Connectcion"
+          onConfirm={() => console.log('huh')}
+          onCancle={() => console.log('huh')}
+        />
+      </SafeAreaView>
+    </>
+  ) : (
+    <>
+      <StatusBar
+        barStyle={'light-content'}
+        backgroundColor={colors.TRANPARENT}
+        translucent={true}
+      />
+
       <View
         style={{
           flex: 1,
@@ -82,7 +118,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-
+  customContainer: {
+    position: 'relative',
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.DARK,
+  },
   progressBG: {
     width: 50,
     height: 8,

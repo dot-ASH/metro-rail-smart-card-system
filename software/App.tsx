@@ -5,28 +5,53 @@ import Splash from './src/components/Splash';
 import {ThemeProvider} from './src/context/ThemeContext';
 import MainStack from './src/navigation/MainStack';
 import supabase from './src/data/supaBaseClient';
+import NetInfo from '@react-native-community/netinfo';
 
 function App(): JSX.Element {
-  const checkAuth = async () => {
-    // const {data, error} = await supabase.auth.getSession();
-    // !error ? console.log(data) : console.log(error.toString());
-    const {data, error} = await supabase.auth.refreshSession({
-      refresh_token: 'Uh2LKyXVHbbQMyLkwZf2KQ',
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [hasSession, setHasSession] = useState<boolean | undefined>();
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      // console.log('Connection type', state.type);
+      // console.log('Is connected?', state.isConnected);
+      setIsConnected(state.isConnected);
     });
-    const {session, user} = data;
-    !error ? console.log(session, user) : console.log(error.toString());
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const {data} = await supabase.auth.getSession();
+      setHasSession(!!data?.session);
+      // setHasSession(false);
+    } catch (error) {
+      console.error('Error checking auth:', error);
+    }
   };
+
   useEffect(() => {
     checkAuth();
   });
+
+  console.log('hmm', typeof hasSession === 'undefined', hasSession);
+
   const [isAppReady, setAppReady] = useState(false);
-  return !isAppReady ? (
-    <Splash isReady={true} onAnimationFinish={() => setAppReady(true)} />
+  return !isAppReady && typeof hasSession === 'undefined' ? (
+    // Add hasSession to the parameter for loading while checking session activity
+    <Splash
+      isReady={true}
+      connectivity={isConnected}
+      onAnimationFinish={() => setAppReady(true)}
+    />
   ) : (
     <AuthProvider>
       <ThemeProvider>
         <NavigationContainer>
-          <MainStack initialRouteName="AuthStack" />
+          <MainStack initialRouteName={hasSession ? 'Verify' : 'AuthStack'} />
         </NavigationContainer>
       </ThemeProvider>
     </AuthProvider>

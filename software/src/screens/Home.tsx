@@ -37,7 +37,8 @@ if (Platform.OS === 'android') {
 
 function Home({navigation}: any): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
-  const {user, setUsers, token, setToken} = useUserInfo();
+  // const {user, setUsers, token, setToken} = useUserInfo();
+  const {user, setUsers} = useUserInfo();
   const [boxPosition, setBoxPosition] = useState('left');
   const [isHidden, setHidden] = useState(true);
   const [moduleVisible, setModuleVisible] = useState(false);
@@ -74,22 +75,22 @@ function Home({navigation}: any): JSX.Element {
     // visible ? setVisible(false) : setVisible(true);
   };
 
-  const handleLogin = () => {
-    // Implement your authentication logic here, and when you get the token, set it using `setToken`
-    const authToken = 'your_generated_token'; // Replace with your authentication logic
-    setToken(authToken);
+  // const handleLogin = () => {
+  //   // Implement your authentication logic here, and when you get the token, set it using `setToken`
+  //   const authToken = 'your_generated_token'; // Replace with your authentication logic
+  //   setToken(authToken);
 
-    // Optionally, you can store the token in AsyncStorage or elsewhere
-    // AsyncStorage.setItem('authToken', authToken);
-  };
+  //   // Optionally, you can store the token in AsyncStorage or elsewhere
+  //   // AsyncStorage.setItem('authToken', authToken);
+  // };
 
-  const handleLogout = () => {
-    // Log out the user by clearing the token
-    setToken(null);
+  // const handleLogout = () => {
+  //   // Log out the user by clearing the token
+  //   setToken(null);
 
-    // Optionally, remove the token from AsyncStorage or wherever it's stored
-    // AsyncStorage.removeItem('authToken');
-  };
+  //   // Optionally, remove the token from AsyncStorage or wherever it's stored
+  //   // AsyncStorage.removeItem('authToken');
+  // };
   const modules = [
     {
       title: 'Fare Chart',
@@ -159,12 +160,7 @@ function Home({navigation}: any): JSX.Element {
   };
 
   useEffect(() => {
-    if (token) {
-    }
-  }, [token]);
-
-  useEffect(() => {
-    decryptBalance(user[0]?.balance);
+    decryptBalance(user[0]?.phn_no[0].balance);
   });
 
   return (
@@ -285,7 +281,9 @@ function Home({navigation}: any): JSX.Element {
                     {fontSize: 40, fontFamily: fonts.Quantico},
                     textStyleAlt,
                   ]}>
-                  {user[0] ? fancify(user[0]?.user_index.toString()) : null}
+                  {user[0]
+                    ? fancify(user[0]?.phn_no[0].user_index.toString())
+                    : null}
                 </Text>
                 <Text
                   style={[

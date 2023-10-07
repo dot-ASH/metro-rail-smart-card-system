@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     height: '100%',
     width: '100%',
-    zIndex: 100,
+    zIndex: 5000,
     justifyContent: 'center',
     alignItems: 'center',
     paddingBottom: 50,

@@ -4,21 +4,22 @@ import React, {
   ReactNode,
   useEffect,
   useState,
+  useCallback,
 } from 'react';
 import supabase from '../data/supaBaseClient';
 
-interface userData {
-  id: number;
+interface userSecureData {
   user_index: number;
-  name: string;
-  gender: string;
   balance: string;
-  token: string;
   verify_pin: string;
 }
+
+interface userData {
+  name: string;
+  gender: string;
+  phn_no: userSecureData[];
+}
 interface AuthContextType {
-  token: string | null;
-  setToken: (token: string | null) => void;
   user: userData[];
   setUsers: (users: userData[]) => void;
 }
@@ -26,8 +27,6 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: [],
   setUsers: () => {},
-  token: null,
-  setToken: () => {},
 });
 
 interface AuthProviderProps {
@@ -35,37 +34,45 @@ interface AuthProviderProps {
 }
 
 const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
-  const [token, setToken] = useState<string | null>(null);
   const [user, setUsers] = useState<userData[]>([]);
+  const [sessionPhn, setSessionPhn] = useState<String | undefined>();
 
-  // You can use `useEffect` here to check for an existing token in storage or do any other initialization
-  const getUserData = async () => {
-    let {data, error} = await supabase
-      .from('user')
-      .select('id, user_index, name, gender, balance, token, verify_pin')
-      .eq('id', 1);
+  const getUserData = useCallback(async () => {
+    if (sessionPhn) {
+      let {data, error} = await supabase
+        .from('user')
+        .select('name, gender, phn_no(user_index, balance, verify_pin)')
+        .eq('phn_no', sessionPhn);
 
-    if (data) {
-      setUsers(data);
-    } else {
-      console.log(error);
+      if (data) {
+        setUsers(data);
+        console.log(data);
+      } else {
+        console.log(error);
+      }
+    }
+  }, [sessionPhn]);
+
+  const checkAuth = async () => {
+    try {
+      const {data} = await supabase.auth.getSession();
+      console.log(data?.session?.user.phone);
+      setSessionPhn(data?.session?.user.phone);
+    } catch (error) {
+      console.error('Error checking auth:', error);
     }
   };
 
   useEffect(() => {
     getUserData();
-  }, []);
+  }, [getUserData]);
 
   useEffect(() => {
-    if (user[0]?.token) {
-      setToken(user[0]?.token);
-    } else {
-      setToken(null);
-    }
-  }, [user]);
+    checkAuth();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{token, setUsers, setToken, user}}>
+    <AuthContext.Provider value={{setUsers, user}}>
       {children}
     </AuthContext.Provider>
   );
