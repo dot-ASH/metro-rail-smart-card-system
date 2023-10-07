@@ -153,8 +153,11 @@ function Home({navigation}: any): JSX.Element {
   };
 
   const decryptBalance = async (input: string) => {
-    setBalance(await decryptHash(input));
+    if (typeof input !== 'undefined') {
+      setBalance(await decryptHash(input));
+    }
   };
+
   useEffect(() => {
     if (token) {
     }

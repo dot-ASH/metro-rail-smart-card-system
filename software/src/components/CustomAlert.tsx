@@ -69,7 +69,7 @@ const CustomAlert = ({
 const styles = StyleSheet.create({
   alertBox: {
     position: 'absolute',
-    height: 80,
+    minheight: 80,
     width: '100%',
     zIndex: 100,
     justifyContent: 'center',
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(50, 46, 47, 0.6)',
   },
   alert: {
-    height: '70%',
+    // height: '70%',
     width: '80%',
     backgroundColor: colors.DARK_HIGHLIGHTED,
     borderRadius: 17,
@@ -85,11 +85,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderColor: colors.DARK,
     elevation: 20,
+    padding: 15,
   },
   alertText: {
     marginTop: 5,
     fontFamily: fonts.KarmaBold,
-    fontSize: 16,
+    fontSize: 14,
     color: colors.DARK,
   },
 });

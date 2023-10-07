@@ -24,6 +24,7 @@ import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {MainStackParamList} from '../navigation/MainStack';
 import CustomAlert from '../components/CustomAlert';
+import supabase from '../data/supaBaseClient';
 
 type verifyScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -63,7 +64,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   const [input, setInput] = useState('');
 
   const handleKeyPress = (key: string) => {
-    if (input.length < 5) {
+    if (input.length < 6) {
       setInput(prevInput => prevInput + key);
       letters.push(key);
     }
@@ -73,7 +74,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
     setAlert(text);
     setTimeout(() => {
       setAlert(null);
-    }, 2000);
+    }, 3000);
   };
 
   const checkReg = () => {
@@ -88,15 +89,61 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
     }
   });
 
-  const sendOTP = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setVerified(true);
+  const sendOTP = async () => {
+    let {data, error} = await supabase.auth.signInWithOtp({
+      phone: '+88' + phone,
+    });
+
+    if (!error) {
+      console.log(data);
+      setVerified(true);
+      setAlertText('OTP has been sent');
+    } else {
+      console.log(error);
+      setAlertText(error.toString());
+    }
   };
 
-  const checkOTP = () => {
-    input.length === 5
-      ? navigation.navigate('Verify')
-      : setAlertText('You must enter 5 number');
+  const checkAuth = async () => {
+    const {data, error} = await supabase.auth.getSession();
+    if (!error) {
+      console.log(data);
+      return true;
+    } else {
+      console.log(error.toString());
+      return false;
+    }
+  };
+
+  const checkOTP = async () => {
+    setInput('');
+    if (input.length === 6) {
+      const {data, error} = await supabase.auth.verifyOtp({
+        phone: '+88' + phone,
+        token: input,
+        type: 'sms',
+      });
+      if (error) {
+        setAlertText(error.toString());
+      }
+      await checkAuth();
+      const hasSession = await checkAuth();
+      hasSession
+        ? navigation.navigate('Verify')
+        : setAlertText('Something went wrong!');
+    } else {
+      setAlertText('You must enter 6 number');
+    }
+  };
+
+  const resendOTP = async () => {
+    const {data, error} = await supabase.auth.resend({
+      type: 'sms',
+      phone: '+88' + phone,
+    });
+    !error
+      ? setAlertText('OTP has been resent')
+      : setAlertText(error.toString());
   };
 
   const resetPhone = () => {
@@ -146,7 +193,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
               />
               <TouchableOpacity
                 onPress={sendOTP}
-                disabled={phoneVerified ? false : true}>
+                disabled={verified ? true : false}>
                 <FontAwesome6Icon
                   name="arrows-turn-right"
                   size={28}
@@ -183,7 +230,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
                   borderBottomWidth: 1,
                   borderBottomColor: colors.VERIFIED,
                 }}
-                onPress={sendOTP}>
+                onPress={resendOTP}>
                 <Text style={[styles.confirmText, {color: colors.VERIFIED}]}>
                   Resend
                 </Text>
@@ -219,6 +266,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
                 </Text>
                 <Text style={styles.input}>
                   {letters[4] ? letters[4] : ' '}
+                </Text>
+                <Text style={styles.input}>
+                  {letters[5] ? letters[5] : ' '}
                 </Text>
               </View>
               <TouchableOpacity onPress={checkOTP}>
@@ -337,7 +387,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   input: {
-    width: '15%',
+    width: '13%',
     aspectRatio: 1,
     color: colors.LIGHT,
     fontSize: 24,
@@ -347,7 +397,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     textAlign: 'center',
-    paddingVertical: 5,
+    paddingVertical: 3,
     fontFamily: fonts.SourceCodeProSemiBold,
   },
 
