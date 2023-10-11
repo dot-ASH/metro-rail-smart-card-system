@@ -16,9 +16,9 @@ interface userSecureData {
 
 interface userData {
   name: string;
-  gender: string;
   phn_no: userSecureData[];
 }
+
 interface AuthContextType {
   user: userData[];
   setUsers: (users: userData[]) => void;
@@ -41,7 +41,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     if (sessionPhn) {
       let {data, error} = await supabase
         .from('user')
-        .select('name, gender, phn_no(user_index, balance, verify_pin)')
+        .select('name, phn_no(user_index, balance, verify_pin)')
         .eq('phn_no', sessionPhn);
 
       if (data) {

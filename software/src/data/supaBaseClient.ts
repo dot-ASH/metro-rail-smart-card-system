@@ -22,19 +22,6 @@ import {SUPABASE_KEY} from '@env';
 const supabaseUrl = 'https://unhvsygaohvjoeuxbans.supabase.co';
 const supabaseKey = SUPABASE_KEY;
 
-// Create a custom storage implementation using AsyncStorage
-// const customStorage = {
-//   async get(key: string) {
-//     return await AsyncStorage.getItem(key);
-//   },
-//   async set(key: string, data: string) {
-//     return await AsyncStorage.setItem(key, data);
-//   },
-//   async remove(key: string) {
-//     return await AsyncStorage.removeItem(key);
-//   },
-// };
-
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     storage: AsyncStorage,
