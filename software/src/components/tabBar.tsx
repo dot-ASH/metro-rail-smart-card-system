@@ -42,15 +42,12 @@ const TabBar = ({state, descriptors, navigation}: TabBarProps) => {
     });
     setHover(hover ? false : true);
   };
-  // useEffect(() => {
-  //   console.log(isDarkMode ? 'dark' : 'light');
-  // }, [isDarkMode]);
   return (
     <View
       style={[
         styles.mainContainer,
         {
-          backgroundColor: isDarkMode ? colors.DARK_ALT : '#f5efea',
+          backgroundColor: isDarkMode ? colors.DARK_ALT : colors.LIGHT_TAB_BAR,
           zIndex: 4000,
         },
       ]}>

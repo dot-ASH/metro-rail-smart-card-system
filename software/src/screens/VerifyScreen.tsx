@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useContext, useState} from 'react';
+import React, {useContext, useState, useEffect} from 'react';
 import {
+  BackHandler,
   Dimensions,
   SafeAreaView,
   StatusBar,
@@ -20,6 +21,7 @@ import {compareSHA} from '../security/encryp';
 import {useUserInfo} from '../context/AuthContext';
 import CustomDialog from '../components/CustomDialog';
 import CustomAlert from '../components/CustomAlert';
+import {sha256HashPin} from '../security/encryp';
 
 type homeScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -64,7 +66,6 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   };
 
   const verifyPin = async () => {
-    console.log(input, user[0].phn_no[0].verify_pin);
     if (!input) {
       setAlertText('Enter your PIN');
       return;
@@ -77,6 +78,16 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
       setAlertText("PIN doesn't match");
     }
   };
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      return true;
+    };
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>

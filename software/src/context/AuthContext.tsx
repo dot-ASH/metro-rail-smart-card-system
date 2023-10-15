@@ -46,7 +46,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
       if (data) {
         setUsers(data);
-        console.log(data);
       } else {
         console.log(error);
       }
@@ -56,7 +55,6 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
   const checkAuth = async () => {
     try {
       const {data} = await supabase.auth.getSession();
-      console.log(data?.session?.user.phone);
       setSessionPhn(data?.session?.user.phone);
     } catch (error) {
       console.error('Error checking auth:', error);

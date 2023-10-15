@@ -26,6 +26,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {MainStackParamList} from '../navigation/MainStack';
 import CustomAlert from '../components/CustomAlert';
 import supabase from '../data/supaBaseClient';
+import {sha256HashPin} from '../security/encryp';
 
 type verifyScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -92,7 +93,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
 
   const sendOTP = async () => {
     const response = await supabase
-      .from('user')
+      .from('user_data')
       .select('*')
       .eq('phn_no', '88' + phone);
 
@@ -151,9 +152,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
       type: 'sms',
       phone: '+88' + phone,
     });
-    !error
-      ? setAlertText('OTP has been resent')
-      : setAlertText(error.toString());
+    !error ? setAlertText('OTP has been resent') : setAlertText(error.message);
   };
 
   const resetPhone = () => {

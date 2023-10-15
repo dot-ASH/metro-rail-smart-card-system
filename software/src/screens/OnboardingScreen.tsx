@@ -3,7 +3,6 @@ import React, {useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -14,13 +13,12 @@ import {
 import {ThemeContext} from '../context/ThemeContext';
 import {colors} from '../style/colors';
 import {fonts} from '../style/fonts';
-import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import IonIcons from 'react-native-vector-icons/Ionicons';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {AuthStackParamList} from '../navigation/AuthStack';
-import {NetworkInfo} from 'react-native-network-info';
+import {REG_URL} from '@env';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -70,7 +68,7 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     fetchIPAddress();
   }, []);
 
-  const youRegUrl = 'http://192.168.0.7:3000';
+  const youRegUrl = REG_URL || 'http://localhost:3000/registration';
 
   return (
     <SafeAreaView style={backgroundStyle}>

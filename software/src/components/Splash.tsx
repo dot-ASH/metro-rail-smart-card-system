@@ -45,7 +45,6 @@ const Splash: React.FC<SplashProp> = ({
   }, [connectivity, count, onAnimationFinish]);
 
   useEffect(() => {
-    console.log(connectivity);
     if (typeof connectivity !== 'boolean') {
       setDialogue(true);
     }

@@ -11,4 +11,6 @@ export const colors = {
   VERIFIED: '#84a98c',
   ERROR: '#fe6d73',
   DARK_SHADE: '#413d3e',
+  LIGHT_TAB_BAR: '#f5efea',
+  LIGHT_DARK_BAR: '#f5efea',
 };

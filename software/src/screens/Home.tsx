@@ -15,6 +15,7 @@ import {
   UIManager,
   LayoutAnimation,
   Image,
+  BackHandler,
 } from 'react-native';
 
 import {colors} from '../style/colors';
@@ -74,23 +75,6 @@ function Home({navigation}: any): JSX.Element {
     navigation.push('ModuleStack');
     // visible ? setVisible(false) : setVisible(true);
   };
-
-  // const handleLogin = () => {
-  //   // Implement your authentication logic here, and when you get the token, set it using `setToken`
-  //   const authToken = 'your_generated_token'; // Replace with your authentication logic
-  //   setToken(authToken);
-
-  //   // Optionally, you can store the token in AsyncStorage or elsewhere
-  //   // AsyncStorage.setItem('authToken', authToken);
-  // };
-
-  // const handleLogout = () => {
-  //   // Log out the user by clearing the token
-  //   setToken(null);
-
-  //   // Optionally, remove the token from AsyncStorage or wherever it's stored
-  //   // AsyncStorage.removeItem('authToken');
-  // };
 
   const modules = [
     {
@@ -163,6 +147,16 @@ function Home({navigation}: any): JSX.Element {
   useEffect(() => {
     decryptBalance(user[0]?.phn_no[0].balance);
   });
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      return true;
+    };
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>

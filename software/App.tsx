@@ -8,12 +8,13 @@ import supabase from './src/data/supaBaseClient';
 import NetInfo from '@react-native-community/netinfo';
 
 function App(): JSX.Element {
-  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [isAppReady, setAppReady] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean | null>(true);
   const [hasSession, setHasSession] = useState<boolean | undefined>();
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      setIsConnected(state.isConnected);
+      setIsConnected(state?.isConnected);
     });
 
     return () => {
@@ -34,11 +35,7 @@ function App(): JSX.Element {
     checkAuth();
   });
 
-  console.log('hmm', typeof hasSession === 'undefined', hasSession);
-
-  const [isAppReady, setAppReady] = useState(false);
-  return !isAppReady && typeof hasSession === 'undefined' ? (
-    // Add hasSession to the parameter for loading while checking session activity
+  return !isAppReady || typeof hasSession === 'undefined' ? (
     <Splash
       isReady={true}
       connectivity={isConnected}

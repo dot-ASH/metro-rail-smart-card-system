@@ -85,7 +85,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderColor: colors.DARK,
-    elevation: 20,
   },
   dialogText: {
     marginTop: 5,
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
   title: {
     borderTopLeftRadius: 15,
     borderTopRightRadius: 15,
-    backgroundColor: colors.LIGHT_HIGHLIGHTED,
+    backgroundColor: colors.DARK_SHADE,
     width: '100%',
     borderBottomWidth: 1,
     borderBottomColor: colors.LIGHT_HIGHLIGHTED,

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {colors} from '../style/colors';
 import {ActivityIndicator} from 'react-native';
+import {ThemeContext} from '../context/ThemeContext';
 
 type CustomloadingProps = {
   isVisible: boolean;
@@ -23,6 +24,8 @@ if (Platform.OS === 'android') {
 
 const Customloading = ({isVisible}: CustomloadingProps): JSX.Element => {
   const [top, setTop] = useState<number>();
+  const {darkMode} = useContext(ThemeContext);
+  const isDarkMode = darkMode;
 
   const toggleLoading = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -39,10 +42,19 @@ const Customloading = ({isVisible}: CustomloadingProps): JSX.Element => {
 
   return (
     <View style={[styles.loadingBox, {top: top}]}>
-      <View style={[styles.loading, {shadowColor: colors.DARK}]}>
+      <View
+        style={[
+          styles.loading,
+          {
+            shadowColor: colors.DARK,
+            backgroundColor: isDarkMode
+              ? colors.LIGHT_SHADE
+              : colors.DARK_SHADE,
+          },
+        ]}>
         <ActivityIndicator
           size={25}
-          color={colors.DARK}
+          color={isDarkMode ? colors.DARK : colors.LIGHT}
           animating={isVisible}
         />
       </View>
@@ -58,12 +70,9 @@ const styles = StyleSheet.create({
     zIndex: 100,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: 'rgba(50, 46, 47, 0.6)',
+    elevation: 10,
   },
   loading: {
-    // height: 30,
-    // aspectRatio: 1,
-    backgroundColor: colors.DARK_HIGHLIGHTED,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
