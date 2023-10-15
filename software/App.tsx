@@ -13,8 +13,6 @@ function App(): JSX.Element {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
-      // console.log('Connection type', state.type);
-      // console.log('Is connected?', state.isConnected);
       setIsConnected(state.isConnected);
     });
 
@@ -27,7 +25,6 @@ function App(): JSX.Element {
     try {
       const {data} = await supabase.auth.getSession();
       setHasSession(!!data?.session);
-      // setHasSession(false);
     } catch (error) {
       console.error('Error checking auth:', error);
     }

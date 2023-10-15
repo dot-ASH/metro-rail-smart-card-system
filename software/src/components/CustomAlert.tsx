@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     zIndex: 100,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(50, 46, 47, 0.6)',
+    // backgroundColor: 'rgba(50, 46, 47, 0.6)',
   },
   alert: {
     // height: '70%',

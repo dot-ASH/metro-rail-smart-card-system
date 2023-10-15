@@ -19,10 +19,21 @@ import CustomAlert from '../components/CustomAlert';
 import Customloading from '../components/CustomLoading';
 import CustomDialog from '../components/CustomDialog';
 import {sha256HashPin, encryptHash, decryptHash} from '../security/encryp';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {MainStackParamList} from '../navigation/MainStack';
 
-function Profile(): JSX.Element {
+type ScreenNavigationProp = NativeStackNavigationProp<
+  MainStackParamList,
+  'AuthStack'
+>;
+
+interface NavigationScreenProp {
+  navigation: ScreenNavigationProp;
+}
+
+function Profile({navigation}: NavigationScreenProp): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
-  const {user, setUsers, token, setToken} = useUserInfo();
+  const {user, setUsers} = useUserInfo();
   const [dialog, setDialog] = useState(true);
   const isDarkMode = darkMode;
 
@@ -53,6 +64,11 @@ function Profile(): JSX.Element {
     // } else {
     //   console.log(data);
     // }
+
+    const {error} = await supabase.auth.signOut();
+    if (!error) {
+      navigation.navigate('AuthStack');
+    }
   };
 
   const test = () => {
@@ -78,7 +94,7 @@ function Profile(): JSX.Element {
         style={[backgroundStyle, styles.screenContainer]}>
         {/* HEADER */}
         <View>
-          <Text style={textStyle}>{user[0]?.verify_pin}</Text>
+          <Text style={textStyle}>{user[0]?.phn_no[0].verify_pin}</Text>
           <TouchableOpacity onPress={() => changePin(1, '100')}>
             <Text style={textStyle}>press</Text>
           </TouchableOpacity>

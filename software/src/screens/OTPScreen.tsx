@@ -1,5 +1,6 @@
-/* eslint-disable react-native/no-inline-styles */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-native/no-inline-styles */
+
 import React, {useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
@@ -43,7 +44,7 @@ if (Platform.OS === 'android') {
   }
 }
 function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
+  const {darkMode} = useContext(ThemeContext);
   const [phone, setPhone] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -74,7 +75,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
     setAlert(text);
     setTimeout(() => {
       setAlert(null);
-    }, 3000);
+    }, 4000);
   };
 
   const checkReg = () => {
@@ -90,17 +91,26 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   });
 
   const sendOTP = async () => {
-    let {data, error} = await supabase.auth.signInWithOtp({
-      phone: '+88' + phone,
-    });
+    const response = await supabase
+      .from('user')
+      .select('*')
+      .eq('phn_no', '88' + phone);
 
-    if (!error) {
-      console.log(data);
-      setVerified(true);
-      setAlertText('OTP has been sent');
+    if (response.data && response.data?.length > 0) {
+      const {data, error} = await supabase.auth.signInWithOtp({
+        phone: '+88' + phone,
+      });
+
+      if (!error) {
+        console.log(data);
+        setVerified(true);
+        setAlertText('OTP has been sent');
+      } else {
+        console.log(error);
+        setAlertText(error.message);
+      }
     } else {
-      console.log(error);
-      setAlertText(error.toString());
+      setAlertText("You aren't registered");
     }
   };
 
@@ -137,7 +147,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   };
 
   const resendOTP = async () => {
-    const {data, error} = await supabase.auth.resend({
+    const {error} = await supabase.auth.resend({
       type: 'sms',
       phone: '+88' + phone,
     });

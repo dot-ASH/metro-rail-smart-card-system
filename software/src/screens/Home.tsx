@@ -91,6 +91,7 @@ function Home({navigation}: any): JSX.Element {
   //   // Optionally, remove the token from AsyncStorage or wherever it's stored
   //   // AsyncStorage.removeItem('authToken');
   // };
+
   const modules = [
     {
       title: 'Fare Chart',

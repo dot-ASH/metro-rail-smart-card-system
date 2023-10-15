@@ -42,7 +42,12 @@
 /software/node_modules/
 /software/npm-debug.log
 /software/yarn-error.log
-
+/software/.env
+/software/*.env
+/software/.env.*
+.env
+/*/.env
+/*/*/.env
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the

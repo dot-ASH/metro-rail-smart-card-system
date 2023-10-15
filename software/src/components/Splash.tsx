@@ -12,6 +12,7 @@ import {colors} from '../style/colors';
 import ProgressBar from 'react-native-progress/Bar';
 import CustomDialog from './CustomDialog';
 import {SafeAreaView} from 'react-native-safe-area-context';
+
 interface SplashProp {
   isReady: boolean;
   connectivity: boolean | null;
