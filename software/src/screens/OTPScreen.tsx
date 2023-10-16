@@ -49,7 +49,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   const [phone, setPhone] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [emailAddress, setEmail] = useState('');
   const [isLoading, setLOading] = useState(false);
+  const [hasResendOTP, setResendOTP] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
   const isDarkMode = darkMode;
 
@@ -92,24 +94,24 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   });
 
   const sendOTP = async () => {
+    setResendOTP(false);
     const response = await supabase
       .from('user_data')
       .select('*')
       .eq('phn_no', '88' + phone);
 
     if (response.data && response.data?.length > 0) {
-      const {data, error} = await supabase.auth.signInWithOtp({
-        phone: '+88' + phone,
-      });
+      // const {data, error} = await supabase.auth.signInWithOtp({
+      //   phone: '+88' + phone,
+      // });
 
-      if (!error) {
-        console.log(data);
-        setVerified(true);
-        setAlertText('OTP has been sent');
-      } else {
-        console.log(error);
-        setAlertText(error.message);
-      }
+      // if (!error) {
+      setVerified(true);
+      setAlertText('OTP has been sent');
+      // } else {
+      //   console.log(error);
+      //   setAlertText(error.message);
+      // }
     } else {
       setAlertText("You aren't registered");
     }
@@ -121,7 +123,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
       console.log(data);
       return true;
     } else {
-      console.log(error.toString());
+      console.log(error.message);
       return false;
     }
   };
@@ -129,13 +131,20 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   const checkOTP = async () => {
     setInput('');
     if (input.length === 6) {
-      const {data, error} = await supabase.auth.verifyOtp({
-        phone: '+88' + phone,
-        token: input,
-        type: 'sms',
-      });
+      const {data, error} = hasResendOTP
+        ? await supabase.auth.verifyOtp({
+            email: emailAddress,
+            token: input,
+            type: 'email',
+          })
+        : await supabase.auth.verifyOtp({
+            phone: '+88' + phone,
+            token: input,
+            type: 'sms',
+          });
+
       if (error) {
-        setAlertText(error.toString());
+        setAlertText(error.message);
       }
       await checkAuth();
       const hasSession = await checkAuth();
@@ -148,11 +157,31 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   };
 
   const resendOTP = async () => {
-    const {error} = await supabase.auth.resend({
-      type: 'sms',
-      phone: '+88' + phone,
-    });
-    !error ? setAlertText('OTP has been resent') : setAlertText(error.message);
+    setResendOTP(true);
+    const response = await supabase
+      .from('user')
+      .select('email')
+      .eq('phn_no', '88' + phone);
+
+    if (response.data) {
+      setEmail(response.data[0]?.email);
+      console.log(emailAddress);
+      const {data, error} = await supabase.auth.signInWithOtp({
+        email: emailAddress,
+      });
+      if (error) {
+        console.log(error.message);
+      }
+      console.log(data);
+      setAlertText('OTP has been resent');
+    }
+
+    // FOR SMS OTP RESEND SERVICE
+    // const {error} = await supabase.auth.resend({
+    //   type: 'sms',
+    //   phone: '+88' + phone,
+    // });
+    // !error ? setAlertText('OTP has been resent') : setAlertText(error.message);
   };
 
   const resetPhone = () => {

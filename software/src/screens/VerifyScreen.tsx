@@ -22,6 +22,7 @@ import {useUserInfo} from '../context/AuthContext';
 import CustomDialog from '../components/CustomDialog';
 import CustomAlert from '../components/CustomAlert';
 import {sha256HashPin} from '../security/encryp';
+import supabase from '../data/supaBaseClient';
 
 type homeScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -68,10 +69,9 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   const verifyPin = async () => {
     if (!input) {
       setAlertText('Enter your PIN');
-      return;
     }
 
-    const pinMatches = await compareSHA(input, user[0].phn_no[0].verify_pin);
+    const pinMatches = await compareSHA(input, user[0].user_data[0].verify_pin);
     if (pinMatches) {
       navigation.navigate('AppStack');
     } else {

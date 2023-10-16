@@ -49,22 +49,22 @@ function TranHistory({navigation}: any): JSX.Element {
           translucent={true}
         />
         {/* {visible && <CustomModal />} */}
-        <TouchableOpacity onPress={event => modalNav(event)}>
+        {/* <TouchableOpacity onPress={event => modalNav(event)}>
           <Text>gsuhsughsu</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
-        {/* <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={[backgroundStyle, styles.screenContainer]}>
-        <Text style={{fontSize: 27, color: 'white'}}>
-          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestias
-          itaque officia magni, sit reiciendis nesciunt quae quam sed! Porro,
-          maiores odio! Itaque, veritatis dicta. Obcaecati, odit tempore cum
-          corrupti non laborum soluta excepturi officia exercitationem expedita,
-          velit vel, culpa natus sed voluptates nulla similique reprehenderit
-          nobis! Soluta sed fugit molestias optio! Officiis
-        </Text>
-      </ScrollView> */}
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          style={[backgroundStyle, styles.screenContainer]}>
+          <Text style={{fontSize: 22, color: 'white'}}>
+            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Molestias
+            itaque officia magni, sit reiciendis nesciunt quae quam sed! Porro,
+            maiores odio! Itaque, veritatis dicta. Obcaecati, odit tempore cum
+            corrupti non laborum soluta excepturi officia exercitationem
+            expedita, velit vel, culpa natus sed voluptates nulla similique
+            reprehenderit nobis! Soluta sed fugit molestias optio! Officiis
+          </Text>
+        </ScrollView>
       </SafeAreaView>
     </GestureHandlerRootView>
   );

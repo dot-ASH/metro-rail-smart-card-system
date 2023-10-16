@@ -16,7 +16,7 @@ interface userSecureData {
 
 interface userData {
   name: string;
-  phn_no: userSecureData[];
+  user_data: userSecureData[];
 }
 
 interface AuthContextType {
@@ -36,12 +36,13 @@ interface AuthProviderProps {
 const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
   const [user, setUsers] = useState<userData[]>([]);
   const [sessionPhn, setSessionPhn] = useState<String | undefined>();
+  const [sessionMail, setSessionMail] = useState<String | undefined>();
 
   const getUserData = useCallback(async () => {
     if (sessionPhn) {
       let {data, error} = await supabase
         .from('user')
-        .select('name, phn_no(user_index, balance, verify_pin)')
+        .select('name, user_data(user_index, balance, verify_pin)')
         .eq('phn_no', sessionPhn);
 
       if (data) {
@@ -50,12 +51,26 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
         console.log(error);
       }
     }
-  }, [sessionPhn]);
+    if (sessionMail) {
+      let {data, error} = await supabase
+        .from('user')
+        .select('name, user_data(user_index, balance, verify_pin)')
+        .eq('email', sessionMail);
+
+      if (data) {
+        setUsers(data);
+      } else {
+        console.log(error);
+      }
+    }
+  }, [sessionPhn, sessionMail]);
 
   const checkAuth = async () => {
     try {
       const {data} = await supabase.auth.getSession();
-      setSessionPhn(data?.session?.user.phone);
+      data?.session?.user.phone
+        ? setSessionPhn(data?.session?.user.phone)
+        : setSessionMail(data?.session?.user.email);
     } catch (error) {
       console.error('Error checking auth:', error);
     }

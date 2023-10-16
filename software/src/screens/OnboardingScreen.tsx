@@ -19,6 +19,7 @@ import IonIcons from 'react-native-vector-icons/Ionicons';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {AuthStackParamList} from '../navigation/AuthStack';
 import {REG_URL} from '@env';
+import OnboardingSvg from '../components/SvgComponents/OnboardingSvg';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -68,7 +69,7 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     fetchIPAddress();
   }, []);
 
-  const youRegUrl = REG_URL || 'http://localhost:3000/registration';
+  const youRegUrl = 'https://admin-landing.vercel.app/registration' || REG_URL;
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -78,12 +79,15 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
         translucent={true}
       />
       <View style={styles.screenContainer}>
+        <View style={styles.onBoardImg}>
+          <OnboardingSvg />
+        </View>
         <View style={styles.onBoardIntro}>
           <View style={styles.gap10}>
             <Text style={[styles.onBoardTitle, textStyle]}>Metro Rider</Text>
             <Text style={[styles.onBoardInfo, textStyle]}>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Consequuntur {ipAddress}.
+              For your convenient and easy trip experience. Login to our service
+              here:
             </Text>
           </View>
           <View style={styles.buttonContainer}>
@@ -140,6 +144,12 @@ const styles = StyleSheet.create({
     paddingVertical: 50,
     marginBottom: 100,
     justifyContent: 'flex-end',
+    // alignItems: 'center',
+  },
+  onBoardImg: {
+    flex: 1,
+    paddingHorizontal: 30,
+    marginBottom: -30,
   },
   onBoardIntro: {
     alignItems: 'center',
@@ -169,6 +179,7 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 15,
     borderRadius: 10,
+    // backgroundColor: colors.DARK_SHADE,
     borderColor: colors.LIGHT_HIGHLIGHTED,
     borderWidth: 1,
     flexDirection: 'row',

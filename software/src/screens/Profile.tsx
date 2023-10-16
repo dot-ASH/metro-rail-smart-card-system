@@ -34,7 +34,7 @@ interface NavigationScreenProp {
 function Profile({navigation}: NavigationScreenProp): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
   const {user, setUsers} = useUserInfo();
-  const [dialog, setDialog] = useState(true);
+  const [dialog, setDialog] = useState(false);
   const isDarkMode = darkMode;
 
   const backgroundStyle = {
@@ -94,9 +94,9 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         style={[backgroundStyle, styles.screenContainer]}>
         {/* HEADER */}
         <View>
-          <Text style={textStyle}>{user[0]?.phn_no[0].verify_pin}</Text>
+          <Text style={textStyle}>{user[0]?.user_data[0].verify_pin}</Text>
           <TouchableOpacity onPress={() => changePin(1, '100')}>
-            <Text style={textStyle}>press</Text>
+            <Text style={textStyle}>Sign out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -145,7 +145,7 @@ function Home({navigation}: any): JSX.Element {
   };
 
   useEffect(() => {
-    decryptBalance(user[0]?.phn_no[0].balance);
+    decryptBalance(user[0]?.user_data[0].balance);
   });
 
   useEffect(() => {
@@ -277,7 +277,7 @@ function Home({navigation}: any): JSX.Element {
                     textStyleAlt,
                   ]}>
                   {user[0]
-                    ? fancify(user[0]?.phn_no[0].user_index.toString())
+                    ? fancify(user[0]?.user_data[0].user_index.toString())
                     : null}
                 </Text>
                 <Text

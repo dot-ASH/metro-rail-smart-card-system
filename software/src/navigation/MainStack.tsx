@@ -24,11 +24,7 @@ const MainStack = ({initialRouteName}: RouteProps) => {
       screenOptions={{headerShown: false}}
       initialRouteName={initialRouteName}>
       <Stack.Screen name="AuthStack" component={AuthStack} />
-      <Stack.Screen
-        name="Verify"
-        component={VerifyScreen}
-        options={{gestureEnabled: false}}
-      />
+      <Stack.Screen name="Verify" component={VerifyScreen} />
       <Stack.Screen name="AppStack" component={AppStack} />
       <Stack.Screen name="ModuleStack" component={ModalStack} />
     </Stack.Navigator>
