@@ -27,6 +27,7 @@ import {MainStackParamList} from '../navigation/MainStack';
 import CustomAlert from '../components/CustomAlert';
 import supabase from '../data/supaBaseClient';
 import {sha256HashPin} from '../security/encryp';
+import {useUserInfo} from '../context/AuthContext';
 
 type verifyScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -49,6 +50,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   const [phone, setPhone] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [verified, setVerified] = useState(false);
+  const {setUsers} = useUserInfo();
   const [emailAddress, setEmail] = useState('');
   const [isLoading, setLOading] = useState(false);
   const [hasResendOTP, setResendOTP] = useState(false);
@@ -120,7 +122,6 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   const checkAuth = async () => {
     const {data, error} = await supabase.auth.getSession();
     if (!error) {
-      console.log(data);
       return true;
     } else {
       console.log(error.message);
@@ -148,9 +149,34 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
       }
       await checkAuth();
       const hasSession = await checkAuth();
-      hasSession
-        ? navigation.navigate('Verify')
-        : setAlertText('Something went wrong!');
+      if (hasSession) {
+        if (!hasResendOTP) {
+          let response = await supabase
+            .from('user')
+            .select('name, user_data(user_index, balance, verify_pin)')
+            .eq('phn_no', input);
+
+          if (response.data) {
+            setUsers(response.data);
+          } else {
+            console.error(error);
+          }
+        } else {
+          let response = await supabase
+            .from('user')
+            .select('name, user_data(user_index, balance, verify_pin)')
+            .eq('email', emailAddress);
+
+          if (response.data) {
+            setUsers(response.data);
+          } else {
+            console.error(error);
+          }
+        }
+        navigation.navigate('Verify');
+      } else {
+        setAlertText('Something went wrong!');
+      }
     } else {
       setAlertText('You must enter 6 number');
     }
@@ -163,16 +189,14 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
       .select('email')
       .eq('phn_no', '88' + phone);
 
-    if (response.data) {
+    if (response.data && response.data[0]?.email) {
       setEmail(response.data[0]?.email);
-      console.log(emailAddress);
       const {data, error} = await supabase.auth.signInWithOtp({
-        email: emailAddress,
+        email: response.data[0]?.email,
       });
       if (error) {
-        console.log(error.message);
+        console.error(error.message);
       }
-      console.log(data);
       setAlertText('OTP has been resent');
     }
 
@@ -357,6 +381,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 30,
+    marginLeft: -5,
   },
   otpInfo: {
     fontSize: 14,
@@ -367,6 +392,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     marginVertical: 15,
     fontFamily: fonts.Bree,
+    marginLeft: -10,
   },
   emailBox: {
     width: '100%',

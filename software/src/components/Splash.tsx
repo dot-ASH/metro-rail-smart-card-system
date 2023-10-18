@@ -62,8 +62,8 @@ const Splash: React.FC<SplashProp> = ({
           isVisible={dialog}
           title="Connectivity Issue"
           text="No Internet Connectcion"
-          onConfirm={() => console.log('huh')}
-          onCancle={() => console.log('huh')}
+          onConfirm={() => console.log('')}
+          onCancle={() => console.log('')}
         />
       </SafeAreaView>
     </>

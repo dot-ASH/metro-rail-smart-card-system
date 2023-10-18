@@ -16,6 +16,8 @@ interface userSecureData {
 
 interface userData {
   name: string;
+  address: string;
+  phn_no: string;
   user_data: userSecureData[];
 }
 
@@ -42,7 +44,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     if (sessionPhn) {
       let {data, error} = await supabase
         .from('user')
-        .select('name, user_data(user_index, balance, verify_pin)')
+        .select(
+          'name, address, phn_no, user_data(user_index, balance, verify_pin)',
+        )
         .eq('phn_no', sessionPhn);
 
       if (data) {
@@ -54,7 +58,9 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
     if (sessionMail) {
       let {data, error} = await supabase
         .from('user')
-        .select('name, user_data(user_index, balance, verify_pin)')
+        .select(
+          'name,address, phn_no, user_data(user_index, balance, verify_pin)',
+        )
         .eq('email', sessionMail);
 
       if (data) {
@@ -82,7 +88,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  });
 
   return (
     <AuthContext.Provider value={{setUsers, user}}>

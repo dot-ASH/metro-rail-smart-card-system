@@ -61,6 +61,12 @@ function Home({navigation}: any): JSX.Element {
     color: !isDarkMode ? colors.LIGHT_ALT : colors.DARK,
   };
 
+  const semiTransparent = {
+    backgroundColor: isDarkMode
+      ? 'rgba(241, 234, 228, 0.1)'
+      : 'rgba(50, 46, 47, 0.2)',
+  };
+
   const switchMode = () => {
     toggleOffDarkMode();
   };
@@ -82,38 +88,19 @@ function Home({navigation}: any): JSX.Element {
       text: 'Know the trip fare to every destination',
       icon: 'file',
       onModulePress: (event: any) => modalNav(event),
+      color: null,
     },
     {
-      title: 'Module Name',
-      text: 'they are coming for you man beware',
+      title: 'How-tos',
+      text: 'Instructions to use the app.',
       icon: 'file',
-      onModulePress: () => {
-        console.log('heii');
-      },
+      onModulePress: (event: any) => modalNav(event),
     },
     {
-      title: 'Module Name',
-      text: 'they are coming for you man beware',
+      title: 'Terms and Conditions',
+      text: 'Rules and convention to follow!',
       icon: 'file',
-      onModulePress: () => {
-        console.log('heii');
-      },
-    },
-    {
-      title: 'Module Name',
-      text: 'they are coming for you man beware',
-      icon: 'file',
-      onModulePress: () => {
-        console.log('heii');
-      },
-    },
-    {
-      title: 'Module Name',
-      text: 'they are coming for you man beware',
-      icon: 'file',
-      onModulePress: () => {
-        console.log('heii');
-      },
+      onModulePress: (event: any) => modalNav(event),
     },
   ];
 
@@ -229,12 +216,12 @@ function Home({navigation}: any): JSX.Element {
             style={{
               flex: 1,
               height: 230,
-              borderRadius: 30,
-              elevation: 10,
+              borderRadius: 20,
+              elevation: 7,
               marginBottom: 30,
               backgroundColor: isDarkMode
                 ? colors.DARK_HIGHLIGHTED
-                : colors.LIGHT_HIGHLIGHTED,
+                : colors.DARK_SHADE,
               shadowColor: isDarkMode ? colors.LIGHT : colors.DARK_LIGHT,
             }}>
             <View style={styles.card}>
@@ -301,8 +288,8 @@ function Home({navigation}: any): JSX.Element {
                 <View style={[styles.modules]} key={key}>
                   <FontAwesome5Icon
                     name={item.icon}
-                    size={32}
-                    color={colors.LIGHT_HIGHLIGHTED}
+                    size={24}
+                    color={item.color || colors.LIGHT_HIGHLIGHTED}
                   />
                   <TouchableOpacity
                     onPress={(event: any) => item.onModulePress(event)}>
@@ -333,7 +320,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginTop: 35,
-    marginHorizontal: 30,
+    marginHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 24,
@@ -391,7 +378,7 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   moduleContainer: {
-    marginTop: 15,
+    marginTop: 5,
     marginBottom: 180,
     gap: 15,
   },
@@ -399,15 +386,16 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     padding: 15,
+    paddingHorizontal: 25,
     borderRadius: 10,
-    borderColor: colors.LIGHT_HIGHLIGHTED,
-    borderWidth: 1,
+    borderWidth: 0.5,
     flexDirection: 'row',
     gap: 20,
     alignItems: 'center',
+    borderColor: colors.LIGHT_HIGHLIGHTED,
   },
   moduleTitle: {
-    fontFamily: fonts.KarmaSemiBold,
+    fontFamily: fonts.KarmaBold,
     fontSize: 17,
   },
   moduleText: {

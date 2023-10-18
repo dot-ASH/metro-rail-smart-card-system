@@ -19,10 +19,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {MainStackParamList} from '../navigation/MainStack';
 import {compareSHA} from '../security/encryp';
 import {useUserInfo} from '../context/AuthContext';
-import CustomDialog from '../components/CustomDialog';
 import CustomAlert from '../components/CustomAlert';
-import {sha256HashPin} from '../security/encryp';
-import supabase from '../data/supaBaseClient';
 
 type homeScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -69,8 +66,8 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   const verifyPin = async () => {
     if (!input) {
       setAlertText('Enter your PIN');
+      return;
     }
-
     const pinMatches = await compareSHA(input, user[0].user_data[0].verify_pin);
     if (pinMatches) {
       navigation.navigate('AppStack');
@@ -102,8 +99,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
           <View style={styles.gap10}>
             <Text style={[styles.verifyTitle, textStyle]}>Verify</Text>
             <Text style={[styles.verifyInfo, textStyle]}>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Consequuntur ipsa dicta officia illum obcaecati.
+              You are logged in but you need to verify yourself. Enter your PIN.
             </Text>
           </View>
 
