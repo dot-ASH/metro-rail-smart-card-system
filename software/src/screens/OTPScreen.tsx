@@ -153,22 +153,26 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
         if (!hasResendOTP) {
           let response = await supabase
             .from('user')
-            .select('name, user_data(user_index, balance, verify_pin)')
+            .select(
+              'name, address, phn_no, user_data(user_index, balance, verify_pin)',
+            )
             .eq('phn_no', input);
 
           if (response.data) {
-            setUsers(response.data);
+            setUsers(response?.data);
           } else {
             console.error(error);
           }
         } else {
           let response = await supabase
             .from('user')
-            .select('name, user_data(user_index, balance, verify_pin)')
+            .select(
+              'name, address, phn_no, user_data(user_index, balance, verify_pin)',
+            )
             .eq('email', emailAddress);
 
           if (response.data) {
-            setUsers(response.data);
+            setUsers(response?.data);
           } else {
             console.error(error);
           }

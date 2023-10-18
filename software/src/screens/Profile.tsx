@@ -98,6 +98,8 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         onCancle={() => setDialog(false)}
         onConfirm={() => console.log('okay')}
       />
+      <View style={styles.vagueCircle} />
+      <View style={[styles.bottomCircle]} />
       <View style={styles.screenContainer}>
         <View style={styles.profileConatiner}>
           <View style={styles.profileDp}>
@@ -266,6 +268,26 @@ const styles = StyleSheet.create({
     gap: 15,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  vagueCircle: {
+    position: 'absolute',
+    backgroundColor: colors.DARK_LIGHT,
+    top: -30,
+    width: '100%',
+    height: 200,
+    borderRadius: 60,
+    opacity: 0.1,
+  },
+  bottomCircle: {
+    position: 'absolute',
+    backgroundColor: colors.DARK_LIGHT,
+    bottom: 40,
+    left: -50,
+    width: '60%',
+    height: 300,
+    borderRadius: 150,
+    opacity: 0.09,
+    transform: [{rotate: '130deg'}],
   },
 });
 export default Profile;

@@ -29,6 +29,7 @@ import {ThemeContext} from '../context/ThemeContext';
 import {fonts} from '../style/fonts';
 import CustomModal from '../components/modules/CustomModal';
 import {decryptHash} from '../security/encryp';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -86,20 +87,38 @@ function Home({navigation}: any): JSX.Element {
     {
       title: 'Fare Chart',
       text: 'Know the trip fare to every destination',
-      icon: 'file',
+      icon: (
+        <Entypo
+          name="stumbleupon-with-circle"
+          size={32}
+          color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
+        />
+      ),
       onModulePress: (event: any) => modalNav(event),
       color: null,
     },
     {
       title: 'How-tos',
       text: 'Instructions to use the app.',
-      icon: 'file',
+      icon: (
+        <FontAwesome5Icon
+          name="info-circle"
+          size={32}
+          color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
+        />
+      ),
       onModulePress: (event: any) => modalNav(event),
     },
     {
       title: 'Terms and Conditions',
       text: 'Rules and convention to follow!',
-      icon: 'file',
+      icon: (
+        <FontAwesome5Icon
+          name="exclamation-circle"
+          size={32}
+          color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
+        />
+      ),
       onModulePress: (event: any) => modalNav(event),
     },
   ];
@@ -217,7 +236,7 @@ function Home({navigation}: any): JSX.Element {
               flex: 1,
               height: 230,
               borderRadius: 20,
-              elevation: 7,
+              elevation: 8,
               marginBottom: 30,
               backgroundColor: isDarkMode
                 ? colors.DARK_HIGHLIGHTED
@@ -286,11 +305,7 @@ function Home({navigation}: any): JSX.Element {
             {modules.map((item, key) => {
               return (
                 <View style={[styles.modules]} key={key}>
-                  <FontAwesome5Icon
-                    name={item.icon}
-                    size={24}
-                    color={item.color || colors.LIGHT_HIGHLIGHTED}
-                  />
+                  {item.icon}
                   <TouchableOpacity
                     onPress={(event: any) => item.onModulePress(event)}>
                     <Text style={[styles.moduleTitle, textStyle]}>
@@ -320,7 +335,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginTop: 35,
-    marginHorizontal: 20,
+    marginHorizontal: 25,
   },
   sectionTitle: {
     fontSize: 24,
@@ -378,7 +393,7 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   moduleContainer: {
-    marginTop: 5,
+    marginTop: 10,
     marginBottom: 180,
     gap: 15,
   },
@@ -388,7 +403,7 @@ const styles = StyleSheet.create({
     padding: 15,
     paddingHorizontal: 25,
     borderRadius: 10,
-    borderWidth: 0.5,
+    borderWidth: 0.8,
     flexDirection: 'row',
     gap: 20,
     alignItems: 'center',
