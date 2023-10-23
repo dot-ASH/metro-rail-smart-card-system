@@ -103,9 +103,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
       .eq('phn_no', '88' + phone);
 
     if (response.data && response.data?.length > 0) {
-      // const {data, error} = await supabase.auth.signInWithOtp({
-      //   phone: '+88' + phone,
-      // });
+      //   const {data, error} = await supabase.auth.signInWithOtp({
+      //     phone: '+88' + phone,
+      //   });
 
       // if (!error) {
       setVerified(true);
@@ -130,7 +130,6 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   };
 
   const checkOTP = async () => {
-    setInput('');
     if (input.length === 6) {
       const {data, error} = hasResendOTP
         ? await supabase.auth.verifyOtp({
@@ -145,7 +144,10 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           });
 
       if (error) {
+        setInput('');
+        letters = [];
         setAlertText(error.message);
+        return;
       }
       await checkAuth();
       const hasSession = await checkAuth();
@@ -157,7 +159,8 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
               'name, address, phn_no, user_data(user_index, balance, verify_pin)',
             )
             .eq('phn_no', input);
-
+          setInput('');
+          letters = [];
           if (response.data) {
             setUsers(response?.data);
           } else {
@@ -177,6 +180,8 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
             console.error(error);
           }
         }
+        setInput('');
+        letters = [];
         navigation.navigate('Verify');
       } else {
         setAlertText('Something went wrong!');

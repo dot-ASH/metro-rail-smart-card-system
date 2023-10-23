@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderColor: colors.DARK,
+    elevation: 50,
   },
   dialogText: {
     marginTop: 5,

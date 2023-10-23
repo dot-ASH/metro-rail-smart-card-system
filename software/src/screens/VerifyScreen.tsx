@@ -70,8 +70,12 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
     }
     const pinMatches = await compareSHA(input, user[0].user_data[0].verify_pin);
     if (pinMatches) {
+      setInput('');
+      letters = [];
       navigation.navigate('AppStack');
     } else {
+      setInput('');
+      letters = [];
       setAlertText("PIN doesn't match");
     }
   };

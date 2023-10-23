@@ -1,21 +1,26 @@
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
+  LayoutAnimation,
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
+  Switch,
   Text,
+  TextInput,
   TouchableOpacity,
+  UIManager,
   View,
 } from 'react-native';
 import {ThemeContext} from '../context/ThemeContext';
 import {colors} from '../style/colors';
 import {useUserInfo} from '../context/AuthContext';
 import supabase from '../data/supaBaseClient';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import Customloading from '../components/CustomLoading';
 import CustomDialog from '../components/CustomDialog';
@@ -27,6 +32,16 @@ import {fonts} from '../style/fonts';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
+import OnboardingScreen from './OnboardingScreen';
+import GestureRecognizer from 'react-native-swipe-gestures';
+import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 type ScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -37,10 +52,34 @@ interface NavigationScreenProp {
   navigation: ScreenNavigationProp;
 }
 
+const PASS_REGEX = /^\d{5}$/;
+
 function Profile({navigation}: NavigationScreenProp): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
   const {user, setUsers} = useUserInfo();
   const [dialog, setDialog] = useState(false);
+  const [alert, setAlert] = useState('');
+  const [elavatedBg, setElavatedBg] = useState(false);
+  const [addrModule, setAddrModule] = useState(false);
+  const [accModule, setAccModule] = useState(false);
+  const [ifLoading, setIfLoading] = useState(false);
+  const [ifSuccess, setIfSuccess] = useState(false);
+  const [ifWrong, setIfWrong] = useState(false);
+  const [psModule, setPassModule] = useState(false);
+  const [settingModule, setSettingModule] = useState(false);
+  const [defaultDark, setDefaultDark] = useState(false);
+  const [pushNoti, setPushNoti] = useState(false);
+  const [passForm, setPassForm] = useState({
+    newPass: '',
+    confirmPass: '',
+  });
+
+  const [dialogInfo, setDialogInfo] = useState({
+    title: '',
+    text: '',
+    onConfirm: () => {},
+  });
+
   const isDarkMode = darkMode;
 
   const backgroundStyle = {
@@ -63,26 +102,117 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
       : 'rgba(50, 46, 47, 0.2)',
   };
 
-  const changePin = async (id: number, value: string) => {
-    // setDialog(true);
-    // const hashedPin = await sha256HashPin(value);
-    // let {data, error} = await supabase
-    //   .from('user')
-    //   .update({verify_pin: hashedPin})
-    //   .eq('id', 1);
-    // if (error) {
-    //   console.log(error);
+  const getStorageValue = async () => {
+    try {
+      const value = await AsyncStorage.getItem('pushNotiValue');
+      if (value !== null) {
+        value === 'true' ? setPushNoti(true) : setPushNoti(false);
+      }
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const setStorageValue = async (valueName: string, value: string) => {
+    try {
+      await AsyncStorage.setItem(valueName, value);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const setAlertText = (text: string) => {
+    setAlert(text);
+    setTimeout(() => {
+      setAlert('');
+    }, 6000);
+  };
+
+  const onChangePassHandler = (value: string, name: string) => {
+    setPassForm(form => ({
+      ...form,
+      [name]: value,
+    }));
+  };
+
+  const changePin = async () => {
+    clearCustoms();
+    let errorLog = '';
+    passForm.newPass !== passForm.confirmPass
+      ? (errorLog = "PIN doesn't match")
+      : !PASS_REGEX.test(passForm.newPass)
+      ? (errorLog = 'Enter a valid PIN')
+      : null;
+
+    if (errorLog) {
+      setAlertText(errorLog);
+    } else {
+      setIfLoading(true);
+      const hashedpPIN = await sha256HashPin(passForm.newPass);
+      const {error} = await supabase
+        .from('user_data')
+        .update({verify_pin: hashedpPIN})
+        .eq('phn_no', user[0].phn_no);
+      if (error) {
+        setIfLoading(false);
+        setAlertText('Somethings wrong! try again');
+      } else {
+        setIfLoading(false);
+        setAlertText('Your PIN has been changed');
+      }
+    }
+  };
+
+  const handleDeafultDark = () => {
+    setDefaultDark(prev => !prev);
+    // if (defaultDark) {
+    //   setDefaultDark(false);
+    //   setStorageValue('defaultDarkValue', 'false');
     // } else {
-    //   console.log(data);
+    //   setDefaultDark(true);
+    //   setStorageValue('defaultDarkValue', 'true');
     // }
+  };
+
+  const handlePushNoti = () => {
+    if (defaultDark) {
+      setPushNoti(false);
+      setStorageValue('pushNotiValue', 'false');
+    } else {
+      setPushNoti(true);
+      setStorageValue('pushNotiValue', 'true');
+    }
   };
 
   const signout = async () => {
     const {error} = await supabase.auth.signOut();
     if (!error) {
+      setDialog(false);
+      navigation.reset({
+        index: 0,
+        routes: [{name: 'AuthStack'}],
+      });
+
       navigation.navigate('AuthStack');
     }
   };
+
+  const getAnimation = () => {
+    LayoutAnimation.configureNext({
+      duration: 250,
+      create: {type: 'easeIn', property: 'opacity'},
+    });
+  };
+  const clearCustoms = () => {
+    setAlert('');
+    setIfLoading(false);
+    setIfSuccess(false);
+    setIfWrong(false);
+  };
+
+  useEffect(() => {
+    getStorageValue();
+  }, []);
 
   return (
     <SafeAreaView style={[styles.container, backgroundStyle]}>
@@ -91,13 +221,260 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         backgroundColor={colors.TRANPARENT}
         translucent={true}
       />
+      {elavatedBg ? <View style={styles.elavatedbg} /> : null}
+
+      {/* CUSTOMS */}
       <CustomDialog
         isVisible={dialog}
-        title="hey"
-        text="lh;ha;af"
+        title={dialogInfo.title}
+        text={dialogInfo.text}
         onCancle={() => setDialog(false)}
-        onConfirm={() => console.log('okay')}
+        onConfirm={dialogInfo.onConfirm}
       />
+      <CustomAlert isVisible={alert.length > 0} text={alert} />
+
+      {/* CHANGE PIN */}
+      {psModule ? (
+        <GestureRecognizer
+          onSwipeDown={() => {
+            getAnimation();
+            clearCustoms();
+            setPassModule(false);
+            setElavatedBg(false);
+          }}
+          style={styles.gestureStyle}>
+          <View
+            style={[
+              backgroundStyle,
+              {
+                width: '85%',
+                borderRadius: 20,
+                elevation: 20,
+              },
+            ]}>
+            <Customloading isVisible={ifLoading} />
+            <View
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: isDarkMode
+                  ? colors.DARK_LIGHT
+                  : 'rgba(0, 0, 0, 0.1)',
+                width: '100%',
+                paddingVertical: 20,
+                paddingHorizontal: 30,
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              <Text
+                style={[
+                  textStyle,
+                  {
+                    textAlign: 'center',
+                    fontFamily: fonts.Bree,
+                    fontSize: 20,
+                  },
+                ]}>
+                Change PIN
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  getAnimation();
+                  clearCustoms();
+                  setPassModule(false);
+                  setElavatedBg(false);
+                }}
+                style={{alignSelf: 'flex-end'}}>
+                <FontAwesome6Icon size={20} name="xmark" style={[textStyle]} />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                paddingVertical: 10,
+                alignItems: 'center',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                width: '100%',
+                gap: 20,
+                marginTop: 20,
+              }}>
+              <View style={[styles.inputContainer, {width: '80%'}]}>
+                <Text style={[textStyle, styles.label]}>New PIN: </Text>
+                <TextInput
+                  style={[textStyle, styles.textInput]}
+                  value={passForm.newPass}
+                  onChangeText={value => onChangePassHandler(value, 'newPass')}
+                  secureTextEntry={true}
+                />
+              </View>
+
+              <View style={[styles.inputContainer, {width: '80%'}]}>
+                <Text style={[textStyle, styles.label]}>Confirm PIN: </Text>
+                <TextInput
+                  style={[textStyle, styles.textInput]}
+                  value={passForm.confirmPass}
+                  onChangeText={value =>
+                    onChangePassHandler(value, 'confirmPass')
+                  }
+                  secureTextEntry={true}
+                />
+              </View>
+              <TouchableOpacity
+                style={[
+                  backgroundStyleAlt,
+                  {
+                    alignSelf: 'center',
+                    borderRadius: 10,
+                    padding: 10,
+                    marginBottom: 10,
+                  },
+                ]}
+                onPress={changePin}>
+                <Text style={[styles.label, textStyleAlt]}>Submit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </GestureRecognizer>
+      ) : null}
+
+      {/* SETTINGS */}
+      {settingModule ? (
+        <GestureRecognizer
+          onSwipeDown={() => {
+            getAnimation();
+            clearCustoms();
+            setPassModule(false);
+            setElavatedBg(false);
+          }}
+          style={styles.gestureStyle}>
+          <View
+            style={[
+              backgroundStyle,
+              {
+                width: '85%',
+                borderRadius: 20,
+                elevation: 20,
+              },
+            ]}>
+            <Customloading isVisible={ifLoading} />
+            <View
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: isDarkMode
+                  ? colors.DARK_LIGHT
+                  : 'rgba(0, 0, 0, 0.1)',
+                width: '100%',
+                paddingVertical: 20,
+                paddingHorizontal: 30,
+                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}>
+              <Text
+                style={[
+                  textStyle,
+                  {
+                    textAlign: 'center',
+                    fontFamily: fonts.Bree,
+                    fontSize: 20,
+                  },
+                ]}>
+                Settings
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  getAnimation();
+                  clearCustoms();
+                  setSettingModule(false);
+                  setElavatedBg(false);
+                }}
+                style={{alignSelf: 'flex-end'}}>
+                <FontAwesome6Icon size={20} name="xmark" style={textStyle} />
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                paddingVertical: 20,
+                alignItems: 'center',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                width: '100%',
+                gap: 10,
+              }}>
+              <View
+                style={[
+                  styles.inputContainer,
+                  {
+                    borderWidth: 0,
+                    width: '90%',
+                    justifyContent: 'space-between',
+                  },
+                ]}>
+                <Text style={[textStyle, styles.label]}>
+                  Default (dark mode)
+                </Text>
+                <Switch
+                  trackColor={{
+                    false: isDarkMode
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(0, 0, 0, 0.2)',
+                    true: isDarkMode
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(0, 0, 0, 0.4)',
+                  }}
+                  thumbColor={
+                    defaultDark && isDarkMode
+                      ? colors.LIGHT
+                      : !defaultDark && isDarkMode
+                      ? colors.LIGHT_HIGHLIGHTED
+                      : defaultDark && !isDarkMode
+                      ? colors.DARK_SHADE
+                      : colors.DARK_LIGHT
+                  }
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={handleDeafultDark}
+                  value={defaultDark}
+                />
+              </View>
+              <View
+                style={[
+                  styles.inputContainer,
+                  {
+                    borderWidth: 0,
+                    width: '90%',
+                    justifyContent: 'space-between',
+                  },
+                ]}>
+                <Text style={[textStyle, styles.label]}>Push Notification</Text>
+                <Switch
+                  trackColor={{
+                    false: isDarkMode
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(0, 0, 0, 0.2)',
+                    true: isDarkMode
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(0, 0, 0, 0.4)',
+                  }}
+                  thumbColor={
+                    pushNoti && isDarkMode
+                      ? colors.LIGHT
+                      : !pushNoti && isDarkMode
+                      ? colors.LIGHT_HIGHLIGHTED
+                      : pushNoti && !isDarkMode
+                      ? colors.DARK_SHADE
+                      : colors.DARK_LIGHT
+                  }
+                  ios_backgroundColor="#3e3e3e"
+                  onValueChange={handlePushNoti}
+                  value={pushNoti}
+                />
+              </View>
+            </View>
+          </View>
+        </GestureRecognizer>
+      ) : null}
+
+      {/* PROFILE PAGE */}
       <View style={styles.vagueCircle} />
       <View style={[styles.bottomCircle]} />
       <View style={styles.screenContainer}>
@@ -110,7 +487,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={colors.DARK}
               />
             </View>
-            <View style={styles.gap15}>
+            <View style={styles.gap20}>
               <Text style={[styles.name, textStyle]}>{user[0].name}</Text>
               <Text
                 style={[
@@ -124,7 +501,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
               <View
                 style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
                 <Text style={[textStyle, styles.address]}>
-                  {user[0].address || "you haven't set you address"}
+                  {user[0].address || "you haven't set your address"}
                 </Text>
                 <TouchableOpacity>
                   <Feather
@@ -144,21 +521,10 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
+                style={{flex: 0.7, textAlign: 'right'}}
               />
-              <TouchableOpacity>
+              <TouchableOpacity style={{flex: 1}}>
                 <Text style={[textStyle, styles.itemName]}>Edit profile</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.menu}>
-              <MaterialIcons
-                name="circle-notifications"
-                size={34}
-                color={
-                  isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
-                }
-              />
-              <TouchableOpacity>
-                <Text style={[textStyle, styles.itemName]}>Notification</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.menu}>
@@ -168,8 +534,15 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
+                style={{flex: 0.7, textAlign: 'right'}}
               />
-              <TouchableOpacity>
+              <TouchableOpacity
+                style={{flex: 1}}
+                onPress={() => {
+                  getAnimation();
+                  setElavatedBg(true);
+                  setPassModule(true);
+                }}>
                 <Text style={[textStyle, styles.itemName]}>Change PIN</Text>
               </TouchableOpacity>
             </View>
@@ -180,8 +553,15 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
+                style={{flex: 0.7, textAlign: 'right'}}
               />
-              <TouchableOpacity>
+              <TouchableOpacity
+                style={{flex: 1}}
+                onPress={() => {
+                  getAnimation();
+                  setElavatedBg(true);
+                  setSettingModule(true);
+                }}>
                 <Text style={[textStyle, styles.itemName]}>Settings</Text>
               </TouchableOpacity>
             </View>
@@ -192,8 +572,18 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
+                style={{flex: 0.7, textAlign: 'right'}}
               />
-              <TouchableOpacity onPress={signout}>
+              <TouchableOpacity
+                onPress={() => {
+                  setDialog(true);
+                  setDialogInfo({
+                    title: 'Signout',
+                    text: 'Do you really want to exit?',
+                    onConfirm: signout,
+                  });
+                }}
+                style={{flex: 1}}>
                 <Text style={[textStyle, styles.itemName]}>Sign Out</Text>
               </TouchableOpacity>
             </View>
@@ -253,19 +643,20 @@ const styles = StyleSheet.create({
     gap: 30,
   },
   menu: {
-    width: '50%',
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    gap: 40,
   },
   itemName: {
     fontFamily: fonts.KarmaBold,
     fontSize: 17,
     textAlign: 'left',
   },
-  gap15: {
+  gap20: {
     flexDirection: 'column',
-    gap: 15,
+    gap: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -288,6 +679,45 @@ const styles = StyleSheet.create({
     borderRadius: 150,
     opacity: 0.09,
     transform: [{rotate: '130deg'}],
+  },
+  elavatedbg: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: Dimensions.get('window').height + 80,
+    width: Dimensions.get('window').width,
+    zIndex: 2000,
+  },
+  gestureStyle: {
+    position: 'absolute',
+    width: Dimensions.get('window').width,
+    height: '90%',
+    zIndex: 3000,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    height: 50,
+    borderWidth: 1,
+    paddingHorizontal: 20,
+    width: '100%',
+    borderRadius: 10,
+    borderColor: colors.DARK_LIGHT,
+    alignItems: 'center',
+    gap: 10,
+    zIndex: 1000,
+  },
+  textInput: {
+    fontFamily: fonts.Vollkorn,
+    alignItems: 'center',
+    fontSize: 20,
+    letterSpacing: 4,
+    width: '100%',
+  },
+  label: {
+    marginTop: 3,
+    fontFamily: fonts.KarmaSemiBold,
+    fontSize: 16,
   },
 });
 export default Profile;

@@ -23,7 +23,8 @@ if (Platform.OS === 'android') {
 }
 
 const Customloading = ({isVisible}: CustomloadingProps): JSX.Element => {
-  const [top, setTop] = useState<number>();
+  const [top, setTop] = useState<number>(-100);
+  const [opacity, setOpacity] = useState<number>(0);
   const {darkMode} = useContext(ThemeContext);
   const isDarkMode = darkMode;
 
@@ -31,8 +32,10 @@ const Customloading = ({isVisible}: CustomloadingProps): JSX.Element => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     if (isVisible) {
       setTop(50);
+      setOpacity(1);
     } else {
       setTop(-100);
+      setOpacity(0);
     }
   };
 
@@ -41,7 +44,7 @@ const Customloading = ({isVisible}: CustomloadingProps): JSX.Element => {
   });
 
   return (
-    <View style={[styles.loadingBox, {top: top}]}>
+    <View style={[styles.loadingBox, {top: top, opacity: opacity}]}>
       <View
         style={[
           styles.loading,

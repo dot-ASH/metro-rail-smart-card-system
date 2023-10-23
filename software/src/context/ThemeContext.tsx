@@ -17,7 +17,7 @@ export const ThemeContext = createContext<ThemeContextProps>({
 });
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({children}) => {
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
 
   const storeData = async (value: string) => {
     try {
