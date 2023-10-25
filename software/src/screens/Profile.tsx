@@ -35,6 +35,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import OnboardingScreen from './OnboardingScreen';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
+import Draggable from 'react-native-draggable';
 
 if (
   Platform.OS === 'android' &&
@@ -53,6 +54,8 @@ interface NavigationScreenProp {
 }
 
 const PASS_REGEX = /^\d{5}$/;
+const SCREEN_WIDTH = Dimensions.get('screen').width;
+const SCREEN_HEIGHT = Dimensions.get('screen').height;
 
 function Profile({navigation}: NavigationScreenProp): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
@@ -203,6 +206,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
       create: {type: 'easeIn', property: 'opacity'},
     });
   };
+
   const clearCustoms = () => {
     setAlert('');
     setIfLoading(false);
@@ -235,106 +239,111 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
 
       {/* CHANGE PIN */}
       {psModule ? (
-        <GestureRecognizer
-          onSwipeDown={() => {
-            getAnimation();
-            clearCustoms();
-            setPassModule(false);
-            setElavatedBg(false);
-          }}
-          style={styles.gestureStyle}>
-          <View
-            style={[
-              backgroundStyle,
-              {
-                width: '85%',
-                borderRadius: 20,
-                elevation: 20,
-              },
-            ]}>
-            <Customloading isVisible={ifLoading} />
+        <View style={styles.gestureStyle}>
+          <Draggable
+            x={SCREEN_WIDTH / 2 - (SCREEN_WIDTH - 40) / 2}
+            y={SCREEN_HEIGHT / 3}
+            touchableOpacityProps={{activeOpacity: 1}}>
             <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: isDarkMode
-                  ? colors.DARK_LIGHT
-                  : 'rgba(0, 0, 0, 0.1)',
-                width: '100%',
-                paddingVertical: 20,
-                paddingHorizontal: 30,
-                alignItems: 'center',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              <Text
-                style={[
-                  textStyle,
-                  {
-                    textAlign: 'center',
-                    fontFamily: fonts.Bree,
-                    fontSize: 20,
-                  },
-                ]}>
-                Change PIN
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  getAnimation();
-                  clearCustoms();
-                  setPassModule(false);
-                  setElavatedBg(false);
-                }}
-                style={{alignSelf: 'flex-end'}}>
-                <FontAwesome6Icon size={20} name="xmark" style={[textStyle]} />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                paddingVertical: 10,
-                alignItems: 'center',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                width: '100%',
-                gap: 20,
-                marginTop: 20,
-              }}>
-              <View style={[styles.inputContainer, {width: '80%'}]}>
-                <Text style={[textStyle, styles.label]}>New PIN: </Text>
-                <TextInput
-                  style={[textStyle, styles.textInput]}
-                  value={passForm.newPass}
-                  onChangeText={value => onChangePassHandler(value, 'newPass')}
-                  secureTextEntry={true}
-                />
+              style={[
+                backgroundStyle,
+                {
+                  width: SCREEN_WIDTH - 40,
+                  borderRadius: 20,
+                  elevation: 20,
+                  padding: 10,
+                },
+              ]}>
+              <Customloading isVisible={ifLoading} />
+              <View
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode
+                    ? colors.DARK_LIGHT
+                    : 'rgba(0, 0, 0, 0.1)',
+                  width: '100%',
+                  paddingVertical: 20,
+                  paddingHorizontal: 30,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={[
+                    textStyle,
+                    {
+                      textAlign: 'center',
+                      fontFamily: fonts.Bree,
+                      fontSize: 20,
+                    },
+                  ]}>
+                  Change PIN
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    getAnimation();
+                    clearCustoms();
+                    setPassModule(false);
+                    setElavatedBg(false);
+                  }}
+                  style={{alignSelf: 'flex-end'}}>
+                  <FontAwesome6Icon
+                    size={20}
+                    name="xmark"
+                    style={[textStyle]}
+                  />
+                </TouchableOpacity>
               </View>
+              <View
+                style={{
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  gap: 20,
+                  marginTop: 20,
+                }}>
+                <View style={[styles.inputContainer, {width: '80%'}]}>
+                  <Text style={[textStyle, styles.label]}>New PIN: </Text>
+                  <TextInput
+                    style={[textStyle, styles.textInput]}
+                    value={passForm.newPass}
+                    onChangeText={value =>
+                      onChangePassHandler(value, 'newPass')
+                    }
+                    secureTextEntry={true}
+                  />
+                </View>
 
-              <View style={[styles.inputContainer, {width: '80%'}]}>
-                <Text style={[textStyle, styles.label]}>Confirm PIN: </Text>
-                <TextInput
-                  style={[textStyle, styles.textInput]}
-                  value={passForm.confirmPass}
-                  onChangeText={value =>
-                    onChangePassHandler(value, 'confirmPass')
-                  }
-                  secureTextEntry={true}
-                />
+                <View style={[styles.inputContainer, {width: '80%'}]}>
+                  <Text style={[textStyle, styles.label]}>Confirm PIN: </Text>
+                  <TextInput
+                    style={[textStyle, styles.textInput]}
+                    value={passForm.confirmPass}
+                    onChangeText={value =>
+                      onChangePassHandler(value, 'confirmPass')
+                    }
+                    secureTextEntry={true}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[
+                    backgroundStyleAlt,
+                    {
+                      alignSelf: 'center',
+                      borderRadius: 10,
+                      padding: 10,
+                      marginBottom: 10,
+                    },
+                  ]}
+                  onPress={changePin}>
+                  <Text style={[styles.label, textStyleAlt]}>Submit</Text>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={[
-                  backgroundStyleAlt,
-                  {
-                    alignSelf: 'center',
-                    borderRadius: 10,
-                    padding: 10,
-                    marginBottom: 10,
-                  },
-                ]}
-                onPress={changePin}>
-                <Text style={[styles.label, textStyleAlt]}>Submit</Text>
-              </TouchableOpacity>
             </View>
-          </View>
-        </GestureRecognizer>
+          </Draggable>
+        </View>
       ) : null}
 
       {/* SETTINGS */}

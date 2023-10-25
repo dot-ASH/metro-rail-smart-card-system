@@ -30,6 +30,7 @@ import {fonts} from '../style/fonts';
 import CustomModal from '../components/modules/CustomModal';
 import {decryptHash} from '../security/encryp';
 import Entypo from 'react-native-vector-icons/Entypo';
+import Payment from '../components/Payment';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -45,6 +46,8 @@ function Home({navigation}: any): JSX.Element {
   const [isHidden, setHidden] = useState(true);
   const [moduleVisible, setModuleVisible] = useState(false);
   const [balance, setBalance] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
+  const [elavatedBg, setElavatedBg] = useState(false);
 
   const isDarkMode = darkMode;
 
@@ -79,7 +82,7 @@ function Home({navigation}: any): JSX.Element {
 
   const modalNav = (e: any) => {
     e.preventDefault();
-    navigation.push('ModuleStack');
+    navigation.navigate('ModuleStack');
     // visible ? setVisible(false) : setVisible(true);
   };
 
@@ -119,7 +122,10 @@ function Home({navigation}: any): JSX.Element {
           color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
         />
       ),
-      onModulePress: (event: any) => modalNav(event),
+      onModulePress: () => {
+        setShowPayment(true);
+        setElavatedBg(true);
+      },
     },
   ];
 
@@ -171,7 +177,15 @@ function Home({navigation}: any): JSX.Element {
         backgroundColor={colors.TRANPARENT}
         translucent={true}
       />
-
+      {elavatedBg ? <View style={styles.elavatedbg} /> : null}
+      {showPayment ? (
+        <Payment
+          onCancle={() => {
+            setShowPayment(false);
+            setElavatedBg(false);
+          }}
+        />
+      ) : null}
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={[backgroundStyle, styles.screenContainer]}>
@@ -327,6 +341,7 @@ function Home({navigation}: any): JSX.Element {
 
 const styles = StyleSheet.create({
   screenContainer: {
+    position: 'relative',
     flexDirection: 'column',
     height: Dimensions.get('window').height + 80,
     width: Dimensions.get('window').width,
@@ -334,8 +349,16 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   sectionContainer: {
-    marginTop: 35,
+    marginTop: 40,
     marginHorizontal: 25,
+    gap: 10,
+  },
+  elavatedbg: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: Dimensions.get('window').height + 80,
+    width: Dimensions.get('window').width,
+    zIndex: 2000,
   },
   sectionTitle: {
     fontSize: 24,

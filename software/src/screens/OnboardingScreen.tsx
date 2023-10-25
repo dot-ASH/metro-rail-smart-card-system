@@ -69,7 +69,7 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     fetchIPAddress();
   }, []);
 
-  const youRegUrl = 'https://admin-landing.vercel.app/registration' || REG_URL;
+  const youRegUrl = REG_URL;
 
   return (
     <SafeAreaView style={backgroundStyle}>

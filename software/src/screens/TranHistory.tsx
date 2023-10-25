@@ -167,13 +167,14 @@ const styles = StyleSheet.create({
   },
   sortContainer: {
     margin: 10,
+    marginBottom: 15,
     marginHorizontal: 20,
   },
   sort: {borderWidth: 0, minHeight: 40, paddingHorizontal: 20},
 
   historyContainer: {
     marginTop: 5,
-    paddingTop: 15,
+    paddingTop: 20,
     flexDirection: 'column',
     marginHorizontal: 20,
     gap: 10,

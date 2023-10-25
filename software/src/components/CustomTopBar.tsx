@@ -139,7 +139,7 @@ const CustomTopBar = ({
 const styles = StyleSheet.create({
   mainItemContainer: {
     flexDirection: 'row',
-    paddingTop: 80,
+    paddingTop: 90,
     padding: 20,
   },
   topBarStyle: {

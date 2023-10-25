@@ -10,6 +10,7 @@ export const colors = {
   DARK_HIGHLIGHTED: '#b9a6ac',
   VERIFIED: '#84a98c',
   ERROR: '#fe6d73',
+  WARNING: '#90857c',
   DARK_SHADE: '#413d3e',
   LIGHT_TAB_BAR: '#f5efea',
   LIGHT_DARK_BAR: '#f5efea',

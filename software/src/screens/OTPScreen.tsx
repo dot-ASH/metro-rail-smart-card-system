@@ -237,8 +237,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           <View style={styles.gap10}>
             <Text style={[styles.otpTitle, textStyle]}>Login</Text>
             <Text style={[styles.otpInfo, textStyle]}>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Consequuntur ipsa dicta officia illum obcaecati.
+              Provide your mobile nmuber and login on OTP verification.
             </Text>
           </View>
 
@@ -352,23 +351,24 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
             </View>
           </View>
         </View>
-
-        <View
-          style={[
-            styles.keypad,
-            {
-              backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK,
-              bottom: verified ? '10%' : '-50%',
-            },
-          ]}>
-          <View style={styles.line} />
-          <CustomDigitKeyboard
-            onKeyPress={handleKeyPress}
-            onCancleKeyPress={() => {
-              setInput('');
-              letters = [];
-            }}
-          />
+        <View>
+          <View
+            style={[
+              styles.keypad,
+              {
+                backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK,
+                bottom: verified ? '10%' : '-50%',
+              },
+            ]}>
+            <View style={styles.line} />
+            <CustomDigitKeyboard
+              onKeyPress={handleKeyPress}
+              onCancleKeyPress={() => {
+                setInput('');
+                letters = [];
+              }}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -379,10 +379,10 @@ const styles = StyleSheet.create({
   screenContainer: {
     position: 'relative',
     flexDirection: 'column',
-    height: Dimensions.get('screen').height + 80,
+    height: Dimensions.get('screen').height + 10,
     width: Dimensions.get('screen').width,
     justifyContent: 'space-between',
-    paddingVertical: 90,
+    paddingTop: 90,
     gap: 10,
   },
   otpIntro: {
@@ -478,7 +478,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     elevation: 10,

@@ -139,20 +139,21 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
             </TouchableOpacity>
           </View>
         </View>
-
-        <View
-          style={[
-            styles.keypad,
-            {backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK},
-          ]}>
-          <View style={styles.line} />
-          <CustomDigitKeyboard
-            onKeyPress={handleKeyPress}
-            onCancleKeyPress={() => {
-              setInput('');
-              letters = [];
-            }}
-          />
+        <View>
+          <View
+            style={[
+              styles.keypad,
+              {backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK},
+            ]}>
+            <View style={styles.line} />
+            <CustomDigitKeyboard
+              onKeyPress={handleKeyPress}
+              onCancleKeyPress={() => {
+                setInput('');
+                letters = [];
+              }}
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -162,10 +163,10 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
 const styles = StyleSheet.create({
   screenContainer: {
     flexDirection: 'column',
-    height: Dimensions.get('screen').height + 80,
+    height: Dimensions.get('screen').height + 10,
     width: Dimensions.get('screen').width,
     justifyContent: 'space-between',
-    paddingVertical: 90,
+    paddingTop: 90,
     gap: 10,
   },
   verifyIntro: {
@@ -213,7 +214,6 @@ const styles = StyleSheet.create({
   keypad: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     elevation: 10,
