@@ -322,24 +322,12 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           <View style={[styles.flexCol, {display: verified ? 'flex' : 'none'}]}>
             <View style={styles.textBox}>
               <View style={styles.textInput}>
-                <Text style={styles.input}>
-                  {letters[0] ? letters[0] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[1] ? letters[1] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[2] ? letters[2] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[3] ? letters[3] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[4] ? letters[4] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[5] ? letters[5] : ' '}
-                </Text>
+                <Text style={styles.input}>{letters[0] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[1] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[2] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[3] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[4] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[5] ? '*' : ' '}</Text>
               </View>
               <TouchableOpacity onPress={checkOTP}>
                 <FontAwesome5Icon

@@ -110,21 +110,11 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
           <View style={styles.flexCol}>
             <View style={styles.textBox}>
               <View style={styles.textInput}>
-                <Text style={styles.input}>
-                  {letters[0] ? letters[0] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[1] ? letters[1] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[2] ? letters[2] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[3] ? letters[3] : ' '}
-                </Text>
-                <Text style={styles.input}>
-                  {letters[4] ? letters[4] : ' '}
-                </Text>
+                <Text style={styles.input}>{letters[0] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[1] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[2] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[3] ? '*' : ' '}</Text>
+                <Text style={styles.input}>{letters[4] ? '*' : ' '}</Text>
               </View>
               <TouchableOpacity onPress={() => verifyPin()}>
                 <FontAwesome6Icon

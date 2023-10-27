@@ -28,7 +28,7 @@ import '../../assets/fonts/Source Code Pro SemiBold.ttf';
 import {ThemeContext} from '../context/ThemeContext';
 import {fonts} from '../style/fonts';
 import CustomModal from '../components/modules/CustomModal';
-import {decryptHash} from '../security/encryp';
+import {decryptHash, encryptHash} from '../security/encryp';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Payment from '../components/Payment';
 
@@ -40,7 +40,6 @@ if (Platform.OS === 'android') {
 
 function Home({navigation}: any): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
-  // const {user, setUsers, token, setToken} = useUserInfo();
   const {user, setUsers} = useUserInfo();
   const [boxPosition, setBoxPosition] = useState('left');
   const [isHidden, setHidden] = useState(true);
@@ -83,7 +82,6 @@ function Home({navigation}: any): JSX.Element {
   const modalNav = (e: any) => {
     e.preventDefault();
     navigation.navigate('ModuleStack');
-    // visible ? setVisible(false) : setVisible(true);
   };
 
   const modules = [
@@ -150,14 +148,15 @@ function Home({navigation}: any): JSX.Element {
     return fancyString;
   };
 
-  const decryptBalance = async (input: string) => {
-    if (typeof input !== 'undefined') {
-      setBalance(await decryptHash(input));
+  const decryptBalance = async () => {
+    if (typeof user[0]?.user_data[0].balance !== 'undefined') {
+      const newBalance = await decryptHash(user[0]?.user_data[0].balance);
+      setBalance(newBalance);
     }
   };
 
   useEffect(() => {
-    decryptBalance(user[0]?.user_data[0].balance);
+    decryptBalance();
   });
 
   useEffect(() => {
@@ -177,15 +176,7 @@ function Home({navigation}: any): JSX.Element {
         backgroundColor={colors.TRANPARENT}
         translucent={true}
       />
-      {elavatedBg ? <View style={styles.elavatedbg} /> : null}
-      {showPayment ? (
-        <Payment
-          onCancle={() => {
-            setShowPayment(false);
-            setElavatedBg(false);
-          }}
-        />
-      ) : null}
+
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={[backgroundStyle, styles.screenContainer]}>

@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
-import {View, Text, StyleSheet, Dimensions, UIManager} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  UIManager,
+  Linking,
+} from 'react-native';
 import React, {useContext, useEffect, useState} from 'react';
 import {colors} from '../style/colors';
 import {fonts} from '../style/fonts';
@@ -15,6 +22,7 @@ import {decryptHash} from '../security/encryp';
 import {useUserInfo} from '../context/AuthContext';
 import axios from 'axios';
 import {LOCALHOST} from '@env';
+import {HOST_SERVER} from '@env';
 import Draggable from 'react-native-draggable';
 
 if (
@@ -57,10 +65,18 @@ const Payment = ({onCancle}: paymentProps) => {
     color: !isDarkMode ? colors.LIGHT_ALT : colors.DARK,
   };
 
+  let currentBalance = parseInt(balance, 10);
+
   const semiTransparent = {
     backgroundColor: isDarkMode
       ? 'rgba(241, 234, 228, 0.1)'
       : 'rgba(50, 46, 47, 0.2)',
+  };
+
+  const openLink = (url: string) => {
+    Linking.openURL(url).catch(err =>
+      console.error('Error opening link: ', err),
+    );
   };
 
   const getAnimation = () => {
@@ -78,7 +94,9 @@ const Payment = ({onCancle}: paymentProps) => {
   };
 
   const handlePayment = async () => {
-    const url = `${LOCALHOST}body-info`;
+    setIfLoading(true);
+    const url = `${HOST_SERVER}/payment-request`;
+    let amountToRchrg = parseInt(amountForm.newAmount, 10);
 
     var myHeaders = {
       'Content-Type': 'application/json',
@@ -89,12 +107,20 @@ const Payment = ({onCancle}: paymentProps) => {
       headers: myHeaders,
       url: url,
       data: {
-        amount: amountForm.newAmount,
+        curr_bal: currentBalance,
+        amount: amountToRchrg,
+        user_index: user[0].user_data[0].user_index,
       },
     };
     axios
       .request(requestOptions)
-      .then(response => console.log(response.data))
+      .then(response => {
+        setIfLoading(false);
+        if (response.data.url) {
+          openLink(response.data.url);
+        }
+        setamountForm({newAmount: ''});
+      })
       .catch(error => console.log('error', error));
   };
 
@@ -105,7 +131,6 @@ const Payment = ({onCancle}: paymentProps) => {
   };
 
   const getBalanceStatus = async () => {
-    let currentBalance = parseInt(balance, 10);
     // let currentBalance = 250;
     if (typeof currentBalance === 'number') {
       if (currentBalance >= 500) {
@@ -156,13 +181,22 @@ const Payment = ({onCancle}: paymentProps) => {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
               }}>
+              <FontAwesome6Icon
+                name="coins"
+                size={22}
+                color={
+                  isDarkMode
+                    ? colors.DARK_HIGHLIGHTED
+                    : colors.LIGHT_HIGHLIGHTED
+                }
+              />
               <Text
                 style={[
                   textStyle,
                   {
                     textAlign: 'center',
                     fontFamily: fonts.Bree,
-                    fontSize: 20,
+                    fontSize: 18,
                   },
                 ]}>
                 Recharge your card
@@ -231,7 +265,6 @@ const Payment = ({onCancle}: paymentProps) => {
                   onChangeText={value =>
                     onChangeAmountHandler(value, 'newAmount')
                   }
-                  secureTextEntry={true}
                 />
               </View>
               <TouchableOpacity

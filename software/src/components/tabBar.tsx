@@ -1,18 +1,15 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
-  LayoutAnimation,
   Platform,
   UIManager,
   View,
-  // Text,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
 } from 'react-native';
 import {colors} from '../style/colors';
 import NavigationIcon from './navigationIcon';
-// import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import {ThemeContext} from '../context/ThemeContext';
 
@@ -31,17 +28,19 @@ export interface TabBarProps {
 
 const TabBar = ({state, descriptors, navigation}: TabBarProps) => {
   const {darkMode} = useContext(ThemeContext);
+  const {payMode, togglePayMode} = useContext(ThemeContext);
+  const isPayMode = payMode;
   const isDarkMode = darkMode;
   const [hover, setHover] = useState(false);
-  const animateHover = () => {
-    LayoutAnimation.configureNext({
-      duration: 500,
-      create: {type: 'linear', property: 'opacity'},
-      update: {type: 'spring', springDamping: 0.4},
-      delete: {type: 'linear', property: 'opacity'},
-    });
-    setHover(hover ? false : true);
+
+  const togglePay = () => {
+    togglePayMode();
   };
+
+  useEffect(() => {
+    isPayMode ? setHover(true) : setHover(false);
+  }, [isPayMode]);
+
   return (
     <View
       style={[
@@ -110,7 +109,7 @@ const TabBar = ({state, descriptors, navigation}: TabBarProps) => {
           </View>
         );
       })}
-      <View
+      <TouchableOpacity
         style={[
           styles.rechargeBtn,
           {
@@ -118,15 +117,16 @@ const TabBar = ({state, descriptors, navigation}: TabBarProps) => {
               ? colors.DARK_HIGHLIGHTED
               : colors.LIGHT_HIGHLIGHTED,
           },
-        ]}>
+        ]}
+        activeOpacity={0.9}
+        onPress={togglePay}>
         <FontAwesome6Icon
           name="coins"
           size={30}
           color={isDarkMode ? colors.DARK_ALT : colors.LIGHT_ALT}
           style={hover ? [styles.recharge, styles.hoverStyle] : styles.recharge}
-          onPress={animateHover}
         />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

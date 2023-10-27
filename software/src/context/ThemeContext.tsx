@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface ThemeContextProps {
   darkMode: boolean;
   toggleOffDarkMode: () => void;
+  payMode: boolean;
+  togglePayMode: () => void;
 }
 
 interface ThemeProviderProps {
@@ -11,13 +13,15 @@ interface ThemeProviderProps {
 }
 
 export const ThemeContext = createContext<ThemeContextProps>({
-  darkMode: true,
-  // darkMode: false,
+  darkMode: false,
   toggleOffDarkMode: () => {},
+  payMode: false,
+  togglePayMode: () => {},
 });
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({children}) => {
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [payMode, setPayMode] = useState<boolean>(false);
 
   const storeData = async (value: string) => {
     try {
@@ -47,8 +51,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({children}) => {
     storeData(String(!darkMode));
   };
 
+  const togglePayMode = () => {
+    setPayMode(prevPayMode => !prevPayMode);
+  };
+
   return (
-    <ThemeContext.Provider value={{darkMode, toggleOffDarkMode}}>
+    <ThemeContext.Provider
+      value={{darkMode, toggleOffDarkMode, payMode, togglePayMode}}>
       {children}
     </ThemeContext.Provider>
   );
