@@ -48,6 +48,7 @@ const TabBar = ({state, descriptors, navigation}: TabBarProps) => {
         {
           backgroundColor: isDarkMode ? colors.DARK_ALT : colors.LIGHT_TAB_BAR,
           zIndex: 4000,
+          shadowColor: isDarkMode ? colors.LIGHT_TAB_BAR : colors.DARK_ALT,
         },
       ]}>
       {state.routes.map((route: any, index: any) => {
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     width: width,
-    elevation: 10,
+    elevation: 15,
     paddingLeft: 5,
     zIndex: 4000,
   },

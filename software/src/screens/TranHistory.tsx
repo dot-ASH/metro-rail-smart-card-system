@@ -1,10 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useContext, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import DropDownPicker from 'react-native-dropdown-picker';
 import {
   Dimensions,
+  FlatList,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -18,15 +19,28 @@ import CustomModal from '../components/modules/CustomModal';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {fonts} from '../style/fonts';
+import supabase from '../data/supaBaseClient';
+import {useUserInfo} from '../context/AuthContext';
+import moment from 'moment';
+
+interface TransDataProp {
+  id: number;
+  transId: string;
+  amount: string;
+  type: string;
+  created_at: string;
+}
 
 function TranHistory({navigation}: any): JSX.Element {
   const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
+  const {user, refresh} = useUserInfo();
   const [visible, setVisible] = useState<boolean>();
   const [dropDownOpen, setDropDownOpen] = useState(false);
   const [sortValue, setSortValue] = useState(null);
+  const [transData, setTransData] = useState<TransDataProp[]>([]);
   const [items, setItems] = useState([
-    {label: 'Sorted by recent', value: 'apple'},
-    {label: 'Sorted by high amount', value: 'banana'},
+    {label: 'Sorted by recent', value: 'recent'},
+    {label: 'Sorted by high amount', value: 'amount'},
   ]);
   const isDarkMode = darkMode;
 
@@ -47,123 +61,149 @@ function TranHistory({navigation}: any): JSX.Element {
       : 'rgba(50, 46, 47, 0.2)',
   };
 
-  const modalNav = (e: any) => {
-    e.preventDefault();
-    navigation.push('module');
-    // visible ? setVisible(false) : setVisible(true);
+  const getTransData = useCallback(async () => {
+    const {data, error} = await supabase
+      .from('transaction')
+      .select('id, transId, amount , type, created_at')
+      .eq('user_index', user[0].user_data[0].user_index)
+      .eq('status', true);
+    if (!error) {
+      setTransData(data);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    getTransData();
+  }, [getTransData, refresh]);
+
+  const changeSort = () => {
+    if (sortValue === 'recent') {
+      return transData.sort((a, b) => b.id - a.id);
+    } else if (sortValue === 'amount') {
+      return transData.sort(
+        (a, b) => parseInt(b.amount, 10) - parseInt(a.amount, 10),
+      );
+    } else {
+      return transData;
+    }
   };
 
+  const Item = ({transId, amount, type, created_at}: TransDataProp) => (
+    <View style={[styles.history]}>
+      <Entypo
+        name="line-graph"
+        size={18}
+        color={colors.DARK}
+        style={[
+          styles.historyIcon,
+          {backgroundColor: type === 'rchrg' ? colors.VERIFIED : colors.ERROR},
+        ]}
+      />
+      <View style={styles.historyLabel}>
+        <Text style={[textStyle, styles.label]}>
+          {type === 'rchrg' ? 'Recharge' : 'Spent'}
+        </Text>
+        <Text style={[textStyle, styles.tranactionId]}>#{transId}</Text>
+      </View>
+      <View style={styles.historyDetails}>
+        <Text style={[textStyle, styles.label]}>
+          {type === 'rchrg' ? `+ ${amount}` : `- ${amount}`}
+        </Text>
+        <Text style={[textStyle, styles.tranactionId, {textAlign: 'right'}]}>
+          {moment(created_at).format('LLL')}
+        </Text>
+      </View>
+    </View>
+  );
+
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <SafeAreaView style={[backgroundStyle, styles.screenContainer]}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={colors.TRANPARENT}
-          translucent={true}
+    <SafeAreaView
+      style={[
+        backgroundStyle,
+        styles.screenContainer,
+        // {flex: transData ? Dimensions.get('window').height + 80 : 1},
+      ]}>
+      <StatusBar
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.TRANPARENT}
+        translucent={true}
+      />
+      <View style={styles.sortContainer}>
+        <DropDownPicker
+          open={dropDownOpen}
+          value={sortValue}
+          items={items}
+          setOpen={setDropDownOpen}
+          setValue={setSortValue}
+          setItems={setItems}
+          style={[semiTransparent, styles.sort]}
+          textStyle={textStyle}
+          listItemLabelStyle={isDarkMode ? textStyle : textStyleAlt}
+          placeholder="Sorted by default"
+          placeholderStyle={textStyle}
+          dropDownContainerStyle={{
+            backgroundColor: colors.LIGHT_HIGHLIGHTED,
+            borderWidth: 0,
+            elevation: 10,
+            paddingHorizontal: 12,
+          }}
+          showTickIcon={true}
+          activityIndicatorColor={'white'}
+          ArrowDownIconComponent={() => (
+            <Entypo
+              name="chevron-down"
+              size={16}
+              style={[textStyle, {opacity: 0.6}]}
+            />
+          )}
+          ArrowUpIconComponent={() => (
+            <Entypo
+              name="chevron-up"
+              size={16}
+              style={[textStyle, {opacity: 0.6}]}
+            />
+          )}
+          TickIconComponent={() => (
+            <Entypo
+              name="check"
+              size={16}
+              style={[textStyle, {opacity: 0.6}]}
+            />
+          )}
         />
-        <View style={styles.sortContainer}>
-          <DropDownPicker
-            open={dropDownOpen}
-            value={sortValue}
-            items={items}
-            setOpen={setDropDownOpen}
-            setValue={setSortValue}
-            setItems={setItems}
-            style={[semiTransparent, styles.sort]}
-            textStyle={textStyle}
-            listItemLabelStyle={isDarkMode ? textStyle : textStyleAlt}
-            placeholder="Sorted by default"
-            placeholderStyle={textStyle}
-            dropDownContainerStyle={{
-              backgroundColor: colors.LIGHT_HIGHLIGHTED,
-              borderWidth: 0,
-              elevation: 10,
-              paddingHorizontal: 12,
-            }}
-            showTickIcon={true}
-            activityIndicatorColor={'white'}
-            ArrowDownIconComponent={() => (
-              <Entypo
-                name="chevron-down"
-                size={16}
-                style={[textStyle, {opacity: 0.6}]}
+      </View>
+      {transData.length > 1 ? (
+        <View style={styles.historyContainer}>
+          <FlatList
+            data={changeSort()}
+            renderItem={({item}) => (
+              <Item
+                transId={item.transId}
+                amount={item.amount}
+                created_at={item.created_at}
+                type={item.type}
+                id={item.id}
               />
             )}
-            ArrowUpIconComponent={() => (
-              <Entypo
-                name="chevron-up"
-                size={16}
-                style={[textStyle, {opacity: 0.6}]}
-              />
-            )}
-            TickIconComponent={() => (
-              <Entypo
-                name="check"
-                size={16}
-                style={[textStyle, {opacity: 0.6}]}
-              />
-            )}
+            keyExtractor={item => item.transId}
           />
         </View>
-
-        {/* {visible && <CustomModal />} */}
-        {/* <TouchableOpacity onPress={event => modalNav(event)}>
-          <Text>gsuhsughsu</Text>
-        </TouchableOpacity> */}
-
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={[backgroundStyle, styles.screenContainer]}>
-          <View style={styles.historyContainer}>
-            <View style={[styles.history]}>
-              <Entypo
-                name="line-graph"
-                size={18}
-                color={colors.DARK}
-                style={[styles.historyIcon, {backgroundColor: colors.ERROR}]}
-              />
-              <View style={styles.historyLabel}>
-                <Text style={[textStyle, styles.label]}>Recharge</Text>
-                <Text style={[textStyle, styles.tranactionId]}>
-                  #2794722379
-                </Text>
-              </View>
-              <View style={styles.historyDetails}>
-                <Text style={[textStyle, styles.label]}>+300</Text>
-                <Text style={[textStyle, styles.tranactionId]}>12.07.2023</Text>
-              </View>
-            </View>
-            <View style={[styles.history]}>
-              <Entypo
-                name="line-graph"
-                size={18}
-                color={colors.LIGHT_ALT}
-                style={[styles.historyIcon, {backgroundColor: colors.VERIFIED}]}
-              />
-              <View style={styles.historyLabel}>
-                <Text style={[textStyle, styles.label]}>Recharge</Text>
-                <Text style={[textStyle, styles.tranactionId]}>
-                  #2794722379
-                </Text>
-              </View>
-              <View style={styles.historyDetails}>
-                <Text style={[textStyle, styles.label]}>+300</Text>
-                <Text style={[textStyle, styles.tranactionId]}>12.07.2023</Text>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+      ) : (
+        <View
+          style={{justifyContent: 'center', alignItems: 'center', margin: 20}}>
+          <Text style={[textStyle, styles.label]}>No transaction is found</Text>
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   screenContainer: {
     flexDirection: 'column',
-    height: Dimensions.get('window').height + 80,
     width: Dimensions.get('window').width,
-    marginBottom: 100,
+    paddingBottom: 100,
+    flex: 1,
   },
   sortContainer: {
     margin: 10,
@@ -177,11 +217,10 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     flexDirection: 'column',
     marginHorizontal: 20,
-    gap: 10,
     borderTopWidth: 0.5,
     borderColor: colors.LIGHT_HIGHLIGHTED,
-    borderStyle: 'dashed',
     borderRadius: 1,
+    paddingBottom: 45,
   },
   history: {
     flex: 1,
@@ -193,6 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 0.5,
     borderColor: colors.LIGHT_HIGHLIGHTED,
+    marginBottom: 15,
   },
   historyIcon: {
     padding: 5,
@@ -204,10 +244,10 @@ const styles = StyleSheet.create({
   },
   tranactionId: {
     fontFamily: fonts.Karma,
-    fontSize: 14,
+    fontSize: 12,
     opacity: 0.7,
   },
-  historyLabel: {flex: 0.5},
-  historyDetails: {flex: 0.4, alignItems: 'flex-end'},
+  historyLabel: {flex: 1.5},
+  historyDetails: {flex: 1, alignItems: 'flex-end'},
 });
 export default TranHistory;

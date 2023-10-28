@@ -117,6 +117,7 @@ const Payment = ({onCancle}: paymentProps) => {
       .then(response => {
         setIfLoading(false);
         if (response.data.url) {
+          console.log(response.data.url);
           openLink(response.data.url);
         }
         setamountForm({newAmount: ''});

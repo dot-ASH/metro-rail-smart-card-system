@@ -10,6 +10,7 @@ import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Dimensions, StyleSheet, View} from 'react-native';
 import Payment from '../components/Payment';
 import {ThemeContext} from '../context/ThemeContext';
+import {useUserInfo} from '../context/AuthContext';
 
 export type AppStackParamList = {
   Home: undefined;
@@ -23,6 +24,7 @@ function AppStack() {
   const [showPayment, setShowPayment] = useState(false);
   const [elavatedBg, setElavatedBg] = useState(false);
   const {payMode, togglePayMode} = useContext(ThemeContext);
+  const {refreshModule} = useUserInfo();
   const tabBarComponent = React.useCallback(
     (props: TabBarProps) => <TabBar {...props} />,
     [],
@@ -49,6 +51,7 @@ function AppStack() {
             togglePayMode();
             setShowPayment(false);
             setElavatedBg(false);
+            refreshModule();
           }}
         />
       ) : null}

@@ -11,23 +11,21 @@
     "build": "react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest ./android/app/src/main/res"
   },
   "dependencies": {
-    "@gorhom/bottom-sheet": "^4",
     "@react-native-async-storage/async-storage": "^1.19.3",
     "@react-native-community/netinfo": "^9.4.1",
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/material-top-tabs": "^6.6.4",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/native-stack": "^6.9.13",
-    "@stripe/stripe-react-native": "^0.33.0",
     "@supabase/supabase-js": "^2.33.2",
     "axios": "^1.5.1",
     "draggable": "^4.2.0",
     "express": "^4.18.2",
     "isaac": "^0.0.5",
     "lottie-react-native": "^6.3.1",
+    "moment": "^2.29.4",
     "react": "18.2.0",
     "react-native": "0.72.4",
-    "react-native-bcrypt": "^2.4.0",
     "react-native-crypto-js": "^1.0.0",
     "react-native-draggable": "^3.3.0",
     "react-native-dropdown-picker": "^5.4.6",
@@ -45,8 +43,7 @@
     "react-native-swipe-gestures": "^1.0.5",
     "react-native-tab-view": "^3.5.2",
     "react-native-url-polyfill": "^2.0.0",
-    "react-native-vector-icons": "^10.0.0",
-    "sslcommerz-lts": "^1.1.0"
+    "react-native-vector-icons": "^10.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -24,11 +24,15 @@ interface userData {
 interface AuthContextType {
   user: userData[];
   setUsers: (users: userData[]) => void;
+  refresh: boolean;
+  refreshModule: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: [],
   setUsers: () => {},
+  refresh: false,
+  refreshModule: () => {},
 });
 
 interface AuthProviderProps {
@@ -39,8 +43,14 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
   const [user, setUsers] = useState<userData[]>([]);
   const [sessionPhn, setSessionPhn] = useState<String | undefined>();
   const [sessionMail, setSessionMail] = useState<String | undefined>();
+  const [refresh, setRefresh] = useState<boolean>(false);
+
+  const refreshModule = () => {
+    setRefresh(prevPayMode => !prevPayMode);
+  };
 
   const getUserData = useCallback(async () => {
+    console.log('refreshed');
     if (sessionPhn) {
       let {data, error} = await supabase
         .from('user')
@@ -84,14 +94,14 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
   useEffect(() => {
     getUserData();
-  }, [getUserData]);
+  }, [getUserData, refresh]);
 
   useEffect(() => {
     checkAuth();
   });
 
   return (
-    <AuthContext.Provider value={{setUsers, user}}>
+    <AuthContext.Provider value={{setUsers, user, refreshModule, refresh}}>
       {children}
     </AuthContext.Provider>
   );
