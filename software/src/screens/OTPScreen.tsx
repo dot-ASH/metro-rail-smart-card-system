@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
 
 import React, {useContext, useEffect, useState} from 'react';
@@ -26,8 +25,8 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {MainStackParamList} from '../navigation/MainStack';
 import CustomAlert from '../components/CustomAlert';
 import supabase from '../data/supaBaseClient';
-import {sha256HashPin} from '../security/encryp';
 import {useUserInfo} from '../context/AuthContext';
+import Customloading from '../components/CustomLoading';
 
 type verifyScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -52,7 +51,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   const [verified, setVerified] = useState(false);
   const {setUsers} = useUserInfo();
   const [emailAddress, setEmail] = useState('');
-  const [isLoading, setLOading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const [hasResendOTP, setResendOTP] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
   const isDarkMode = darkMode;
@@ -62,10 +61,6 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
   };
   const textStyle = {
     color: isDarkMode ? colors.LIGHT_ALT : colors.DARK,
-  };
-
-  const textStyleAlt = {
-    color: !isDarkMode ? colors.LIGHT_ALT : colors.DARK,
   };
   const [input, setInput] = useState('');
 
@@ -97,30 +92,34 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
 
   const sendOTP = async () => {
     setResendOTP(false);
+    setLoading(true);
     const response = await supabase
       .from('user_data')
       .select('*')
       .eq('phn_no', '88' + phone);
 
     if (response.data && response.data?.length > 0) {
-      //   const {data, error} = await supabase.auth.signInWithOtp({
-      //     phone: '+88' + phone,
-      //   });
+      // const {data, error} = await supabase.auth.signInWithOtp({
+      //   phone: '+88' + phone,
+      // });
 
       // if (!error) {
       setVerified(true);
+      setLoading(false);
       setAlertText('OTP has been sent');
       // } else {
+      //  setLoading(false);
       //   console.log(error);
       //   setAlertText(error.message);
       // }
     } else {
+      setLoading(false);
       setAlertText("You aren't registered");
     }
   };
 
   const checkAuth = async () => {
-    const {data, error} = await supabase.auth.getSession();
+    const {error} = await supabase.auth.getSession();
     if (!error) {
       return true;
     } else {
@@ -131,7 +130,8 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
 
   const checkOTP = async () => {
     if (input.length === 6) {
-      const {data, error} = hasResendOTP
+      setLoading(true);
+      const {error} = hasResendOTP
         ? await supabase.auth.verifyOtp({
             email: emailAddress,
             token: input,
@@ -144,6 +144,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           });
 
       if (error) {
+        setLoading(false);
         setInput('');
         letters = [];
         setAlertText(error.message);
@@ -182,6 +183,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
         }
         setInput('');
         letters = [];
+        setLoading(false);
         navigation.navigate('Verify');
       } else {
         setAlertText('Something went wrong!');
@@ -200,7 +202,7 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
 
     if (response.data && response.data[0]?.email) {
       setEmail(response.data[0]?.email);
-      const {data, error} = await supabase.auth.signInWithOtp({
+      const {error} = await supabase.auth.signInWithOtp({
         email: response.data[0]?.email,
       });
       if (error) {
@@ -232,12 +234,20 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
         translucent={true}
       />
       <CustomAlert isVisible={alert ? true : false} text={alert} />
-      <View style={styles.screenContainer}>
+      <Customloading isVisible={isLoading} />
+      <View
+        style={[
+          styles.screenContainer,
+          {
+            justifyContent: verified ? 'flex-start' : 'center',
+            paddingTop: verified ? 100 : 0,
+          },
+        ]}>
         <View style={styles.otpIntro}>
           <View style={styles.gap10}>
             <Text style={[styles.otpTitle, textStyle]}>Login</Text>
             <Text style={[styles.otpInfo, textStyle]}>
-              Provide your mobile nmuber and login on OTP verification.
+              Verify you number using OTP verification.
             </Text>
           </View>
 
@@ -318,45 +328,46 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
 
-          <View style={[styles.flexCol, {display: verified ? 'flex' : 'none'}]}>
-            <View style={styles.textBox}>
-              <View style={styles.textInput}>
-                <Text style={styles.input}>{letters[0] ? '*' : ' '}</Text>
-                <Text style={styles.input}>{letters[1] ? '*' : ' '}</Text>
-                <Text style={styles.input}>{letters[2] ? '*' : ' '}</Text>
-                <Text style={styles.input}>{letters[3] ? '*' : ' '}</Text>
-                <Text style={styles.input}>{letters[4] ? '*' : ' '}</Text>
-                <Text style={styles.input}>{letters[5] ? '*' : ' '}</Text>
-              </View>
-              <TouchableOpacity onPress={checkOTP}>
-                <FontAwesome5Icon
-                  name="arrow-circle-right"
-                  size={32}
-                  color={colors.LIGHT_HIGHLIGHTED}
-                />
-              </TouchableOpacity>
+        <View style={[styles.flexCol, {display: verified ? 'flex' : 'none'}]}>
+          <View style={styles.textBox}>
+            <View style={styles.textInput}>
+              <Text style={styles.input}>{letters[0] ? letters[0] : ' '}</Text>
+              <Text style={styles.input}>{letters[1] ? letters[1] : ' '}</Text>
+              <Text style={styles.input}>{letters[2] ? letters[2] : ' '}</Text>
+              <Text style={styles.input}>{letters[3] ? letters[3] : ' '}</Text>
+              <Text style={styles.input}>{letters[4] ? letters[4] : ' '}</Text>
+              <Text style={styles.input}>{letters[5] ? letters[5] : ' '}</Text>
             </View>
+            <TouchableOpacity onPress={checkOTP}>
+              <FontAwesome5Icon
+                name="arrow-circle-right"
+                size={32}
+                color={colors.LIGHT_HIGHLIGHTED}
+              />
+            </TouchableOpacity>
           </View>
         </View>
-        <View>
-          <View
-            style={[
-              styles.keypad,
-              {
-                backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK,
-                bottom: verified ? '10%' : '-50%',
-              },
-            ]}>
-            <View style={styles.line} />
-            <CustomDigitKeyboard
-              onKeyPress={handleKeyPress}
-              onCancleKeyPress={() => {
-                setInput('');
-                letters = [];
-              }}
-            />
-          </View>
+
+        <View
+          style={[
+            styles.keypad,
+            {
+              backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK,
+              bottom: verified ? 0 : '-100%',
+              display: verified ? 'flex' : 'none',
+              // display: 'none',
+            },
+          ]}>
+          <View style={styles.line} />
+          <CustomDigitKeyboard
+            onKeyPress={handleKeyPress}
+            onCancleKeyPress={() => {
+              setInput('');
+              letters = [];
+            }}
+          />
         </View>
       </View>
     </SafeAreaView>
@@ -367,30 +378,50 @@ const styles = StyleSheet.create({
   screenContainer: {
     position: 'relative',
     flexDirection: 'column',
-    height: Dimensions.get('screen').height + 10,
+    height: Dimensions.get('screen').height,
     width: Dimensions.get('screen').width,
-    justifyContent: 'space-between',
-    paddingTop: 90,
-    gap: 10,
+    paddingHorizontal: 30,
+    gap: 50,
   },
-  otpIntro: {
-    flex: 0.5,
+  elavatedbg: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: Dimensions.get('window').height + 80,
+    width: Dimensions.get('window').width,
+    zIndex: 2000,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  otpIntro: {
     justifyContent: 'space-between',
-    padding: 30,
-    marginLeft: -5,
+    gap: 20,
   },
-  otpInfo: {
-    fontSize: 14,
-    fontFamily: fonts.Vollkorn,
-    opacity: 0.8,
-  },
+
   otpTitle: {
     fontSize: 40,
     marginVertical: 15,
     fontFamily: fonts.Bree,
-    marginLeft: -10,
   },
+
+  otpInfo: {
+    fontSize: 14,
+    fontFamily: fonts.Vollkorn,
+    opacity: 0.8,
+    textAlign: 'justify',
+  },
+
+  gap10: {
+    flexDirection: 'column',
+    gap: 10,
+  },
+
+  widthFull: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   emailBox: {
     width: '100%',
     flexDirection: 'row',
@@ -440,7 +471,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    // marginBottom: 20,
   },
   textInput: {
     flexDirection: 'row',
@@ -459,10 +490,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     textAlign: 'center',
     paddingVertical: 3,
-    fontFamily: fonts.SourceCodeProSemiBold,
+    fontFamily: fonts.SourceCodeProBold,
   },
 
   keypad: {
+    width: Dimensions.get('screen').width,
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
@@ -480,19 +512,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.LIGHT_HIGHLIGHTED,
     borderRadius: 50,
   },
-  gap10: {
-    gap: 15,
-  },
   flexCol: {
     flexDirection: 'column',
     gap: 10,
     justifyContent: 'center',
   },
-  widthFull: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
   forget: {
     fontFamily: fonts.Vollkorn,
     color: colors.LIGHT,

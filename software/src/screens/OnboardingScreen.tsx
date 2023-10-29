@@ -86,7 +86,7 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
           <View style={styles.gap10}>
             <Text style={[styles.onBoardTitle, textStyle]}>Metro Rider</Text>
             <Text style={[styles.onBoardInfo, textStyle]}>
-              For your convenient and easy trip experience. Login to our service
+              For your convenient and easy trip experience, Login to our service
               here:
             </Text>
           </View>
