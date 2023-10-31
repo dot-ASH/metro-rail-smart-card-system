@@ -14,9 +14,17 @@ interface userSecureData {
   verify_pin: string;
 }
 
+// interface stationData {
+//   id: number;
+//   distance: number;
+//   station_code: string;
+//   station_name: string;
+// }
+
 interface userData {
   name: string;
   address: string;
+  station: any;
   phn_no: string;
   user_data: userSecureData[];
 }
@@ -55,7 +63,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       let {data, error} = await supabase
         .from('user')
         .select(
-          'name, address, phn_no, user_data(user_index, balance, verify_pin)',
+          'name,address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
         )
         .eq('phn_no', sessionPhn);
 
@@ -69,7 +77,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       let {data, error} = await supabase
         .from('user')
         .select(
-          'name,address, phn_no, user_data(user_index, balance, verify_pin)',
+          'name, address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
         )
         .eq('email', sessionMail);
 

@@ -29,7 +29,7 @@ const CustomAlert = ({
   text,
   status,
 }: CustomAlertProps): JSX.Element => {
-  const [top, setTop] = useState<number>();
+  const [top, setTop] = useState<number>(-100);
   const {darkMode} = useContext(ThemeContext);
   const isDarkMode = darkMode;
 
@@ -83,7 +83,7 @@ const CustomAlert = ({
             styles.alertText,
             {color: isDarkMode ? colors.DARK : colors.LIGHT},
           ]}>
-          {text || 'Loading...'}
+          {text}
         </Text>
       </View>
     </View>

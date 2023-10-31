@@ -136,39 +136,35 @@ function TranHistory({navigation}: any): JSX.Element {
           setOpen={setDropDownOpen}
           setValue={setSortValue}
           setItems={setItems}
-          style={[semiTransparent, styles.sort]}
-          textStyle={textStyle}
+          style={[
+            semiTransparent,
+            styles.sort,
+            {borderWidth: 0, minHeight: 40, paddingHorizontal: 20},
+          ]}
+          textStyle={[textStyle, {fontFamily: fonts.Vollkorn, fontSize: 16}]}
           listItemLabelStyle={isDarkMode ? textStyle : textStyleAlt}
-          placeholder="Sorted by default"
-          placeholderStyle={textStyle}
+          placeholder={'Sorted by default'}
+          placeholderStyle={[
+            textStyle,
+            {fontFamily: fonts.KarmaBold, marginTop: 5, fontSize: 14},
+          ]}
           dropDownContainerStyle={{
             backgroundColor: colors.LIGHT_HIGHLIGHTED,
             borderWidth: 0,
             elevation: 10,
             paddingHorizontal: 12,
+            paddingBottom: 15,
           }}
           showTickIcon={true}
           activityIndicatorColor={'white'}
           ArrowDownIconComponent={() => (
-            <Entypo
-              name="chevron-down"
-              size={16}
-              style={[textStyle, {opacity: 0.6}]}
-            />
+            <Entypo name="chevron-down" size={16} style={textStyle} />
           )}
-          ArrowUpIconComponent={() => (
-            <Entypo
-              name="chevron-up"
-              size={16}
-              style={[textStyle, {opacity: 0.6}]}
-            />
+          ArrowUpIconComponent={({style}) => (
+            <Entypo name="chevron-up" size={16} style={textStyle} />
           )}
-          TickIconComponent={() => (
-            <Entypo
-              name="check"
-              size={16}
-              style={[textStyle, {opacity: 0.6}]}
-            />
+          TickIconComponent={({style}) => (
+            <Entypo name="check" size={16} style={textStyle} />
           )}
         />
       </View>
@@ -247,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     opacity: 0.7,
   },
-  historyLabel: {flex: 1.5},
+  historyLabel: {flex: 1.7},
   historyDetails: {flex: 1, alignItems: 'flex-end'},
 });
 export default TranHistory;

@@ -1,6 +1,7 @@
+/* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
   LayoutAnimation,
@@ -36,6 +37,7 @@ import OnboardingScreen from './OnboardingScreen';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import Draggable from 'react-native-draggable';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 if (
   Platform.OS === 'android' &&
@@ -51,6 +53,17 @@ type ScreenNavigationProp = NativeStackNavigationProp<
 
 interface NavigationScreenProp {
   navigation: ScreenNavigationProp;
+}
+
+interface StationDataProps {
+  station_name: string;
+  station_code: string;
+  distance: number;
+}
+
+interface StationNameProps {
+  label: string;
+  value: string;
 }
 
 const PASS_REGEX = /^\d{5}$/;
@@ -82,6 +95,17 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
     text: '',
     onConfirm: () => {},
   });
+
+  const [stationData, setStationData] = useState<StationDataProps[]>();
+  const [stationName, setStationName] = useState<StationNameProps[]>([]);
+  const [visible, setVisible] = useState<boolean>();
+  const [dropDownOpen, setDropDownOpen] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+  const [sortValue, setSortValue] = useState('');
+  const [items, setItems] = useState([
+    {label: 'Sorted by recent', value: 'recent'},
+    {label: 'Sorted by high amount', value: 'amount'},
+  ]);
 
   const isDarkMode = darkMode;
 
@@ -217,6 +241,55 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
   useEffect(() => {
     getStorageValue();
   }, []);
+
+  const getStation = useCallback(async () => {
+    const {data, error} = await supabase
+      .from('station')
+      .select('station_code, station_name, distance')
+      .order('distance');
+    if (!error) {
+      setStationData(data);
+    }
+  }, []);
+
+  const updateUser = useCallback(async () => {
+    if (sortValue && sortValue !== user[0].address) {
+      const {error} = await supabase
+        .from('user')
+        .update({address: sortValue})
+        .eq('phn_no', user[0].phn_no);
+    }
+  }, [sortValue, user]);
+
+  const setUserD = async () => {
+    const {error} = await supabase
+      .from('user')
+      .update({address: null})
+      .eq('phn_no', user[0].phn_no);
+  };
+
+  useEffect(() => {
+    updateUser();
+  }, [updateUser]);
+
+  useEffect(() => {
+    getStation();
+  }, [getStation]);
+
+  useEffect(() => {
+    if (stationData) {
+      setLoading(false);
+      let newStationName = stationData?.map(obj => {
+        return {
+          label: obj.station_name,
+          value: obj.station_code,
+        };
+      });
+      setStationName(newStationName);
+    } else {
+      setLoading(true);
+    }
+  }, [stationData]);
 
   return (
     <SafeAreaView style={[styles.container, backgroundStyle]}>
@@ -507,18 +580,50 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 ]}>
                 +{user[0].phn_no}
               </Text>
-              <View
-                style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
-                <Text style={[textStyle, styles.address]}>
-                  {user[0].address || "you haven't set your address"}
-                </Text>
-                <TouchableOpacity>
-                  <Feather
-                    name="edit"
-                    size={18}
-                    style={[textStyle, {opacity: 0.8, elevation: 5}]}
-                  />
-                </TouchableOpacity>
+              <View>
+                <DropDownPicker
+                  open={dropDownOpen}
+                  value={sortValue}
+                  items={stationName}
+                  setOpen={setDropDownOpen}
+                  setValue={setSortValue}
+                  setItems={setStationName}
+                  style={styles.sort}
+                  textStyle={[textStyle, {textAlign: 'right', flex: 0}]}
+                  listItemLabelStyle={textStyle}
+                  placeholder={
+                    user[0].station?.station_name ||
+                    "You haven't set your station yet"
+                  }
+                  placeholderStyle={[textStyle, styles.address]}
+                  dropDownContainerStyle={{
+                    backgroundColor: isDarkMode ? '#3B3637' : '#E7E0DB',
+                    borderWidth: 0,
+                    elevation: 10,
+                    paddingHorizontal: 12,
+                    paddingBottom: 15,
+                    paddingTop: 10,
+                    borderRadius: 10,
+                    width: '65%',
+                    marginLeft: sortValue === '' ? 0 : -50,
+                  }}
+                  showTickIcon={true}
+                  ArrowDownIconComponent={() => (
+                    <Feather
+                      name="edit"
+                      size={18}
+                      style={[textStyle, {opacity: 0.8, elevation: 5}]}
+                    />
+                  )}
+                  ArrowUpIconComponent={({style}) => (
+                    <Entypo name="chevron-up" size={16} style={textStyle} />
+                  )}
+                  TickIconComponent={({style}) => (
+                    <Entypo name="check" size={16} style={textStyle} />
+                  )}
+                  scrollViewProps={{endFillColor: 'black'}}
+                  loading={isLoading}
+                />
               </View>
             </View>
           </View>
@@ -532,7 +637,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 }
                 style={{flex: 0.7, textAlign: 'right'}}
               />
-              <TouchableOpacity style={{flex: 1}}>
+              <TouchableOpacity style={{flex: 1}} onPress={setUserD}>
                 <Text style={[textStyle, styles.itemName]}>Edit profile</Text>
               </TouchableOpacity>
             </View>
@@ -727,6 +832,14 @@ const styles = StyleSheet.create({
     marginTop: 3,
     fontFamily: fonts.KarmaSemiBold,
     fontSize: 16,
+  },
+  sort: {
+    borderWidth: 0,
+    minHeight: 40,
+    paddingHorizontal: 20,
+    backgroundColor: colors.TRANPARENT,
+    justifyContent: 'flex-start',
+    zIndex: 100,
   },
 });
 export default Profile;

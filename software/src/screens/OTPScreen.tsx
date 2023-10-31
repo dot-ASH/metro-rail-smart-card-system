@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
 
 import React, {useContext, useEffect, useState} from 'react';
@@ -27,6 +28,7 @@ import CustomAlert from '../components/CustomAlert';
 import supabase from '../data/supaBaseClient';
 import {useUserInfo} from '../context/AuthContext';
 import Customloading from '../components/CustomLoading';
+import RNRestart from 'react-native-restart';
 
 type verifyScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -157,11 +159,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           let response = await supabase
             .from('user')
             .select(
-              'name, address, phn_no, user_data(user_index, balance, verify_pin)',
+              'name, address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
             )
             .eq('phn_no', input);
-          setInput('');
-          letters = [];
           if (response.data) {
             setUsers(response?.data);
           } else {
@@ -171,10 +171,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           let response = await supabase
             .from('user')
             .select(
-              'name, address, phn_no, user_data(user_index, balance, verify_pin)',
+              'name, address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
             )
             .eq('email', emailAddress);
-
           if (response.data) {
             setUsers(response?.data);
           } else {
@@ -184,7 +183,11 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
         setInput('');
         letters = [];
         setLoading(false);
-        navigation.navigate('Verify');
+        // navigation.navigate('Verify');
+        setAlertText('Login Successful');
+        setTimeout(() => {
+          RNRestart.restart();
+        }, 1000);
       } else {
         setAlertText('Something went wrong!');
       }
@@ -357,7 +360,6 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
               backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK,
               bottom: verified ? 0 : '-100%',
               display: verified ? 'flex' : 'none',
-              // display: 'none',
             },
           ]}>
           <View style={styles.line} />

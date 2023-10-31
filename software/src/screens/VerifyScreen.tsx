@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useContext, useState, useEffect} from 'react';
+import React, {useContext, useState, useEffect, useCallback} from 'react';
 import {
   BackHandler,
   Dimensions,
@@ -38,7 +38,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   const {darkMode} = useContext(ThemeContext);
   const {user} = useUserInfo();
   const isDarkMode = darkMode;
-  const [alert, setAlert] = useState<string | null>(null);
+  const [alert, setAlert] = useState<string>();
   const [isLoading, setLoading] = useState(false);
   const [isBlocked, setBlock] = useState<boolean>(false);
   const [count, setCount] = useState<number>(1);
@@ -71,10 +71,22 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
     setBlock(true);
   };
 
+  const getBlocked = useCallback(async () => {
+    const {data, error} = await supabase
+      .from('suspend')
+      .select('*')
+      .eq('user_index', user[0]?.user_data[0]?.user_index);
+    if (error) {
+      console.log(error.message);
+      return;
+    }
+    data.length > 0 ? setBlock(true) : setBlock(false);
+  }, [user]);
+
   const setAlertText = (text: string) => {
     setAlert(text);
     setTimeout(() => {
-      setAlert(null);
+      setAlert('');
     }, 4000);
   };
 
@@ -89,7 +101,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
       setInput('');
       letters = [];
       setLoading(false);
-      navigation.navigate('AppStack');
+      navigation.push('AppStack');
     } else {
       setLoading(false);
       setInput('');
@@ -104,6 +116,16 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
       );
     }
   };
+
+  useEffect(() => {
+    if (user[0]) {
+      getBlocked();
+    }
+  }, [getBlocked, user]);
+
+  useEffect(() => {
+    user[0] ? setLoading(false) : setLoading(true);
+  }, [user]);
 
   useEffect(() => {
     const handleBackButton = () => {
@@ -167,8 +189,8 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
           <View style={styles.gap10}>
             <Text style={[styles.verifyTitle, textStyle]}>Verify</Text>
             <Text style={[styles.verifyInfo, textStyle]}>
-              You are logged in but you need to verify yourself. Enter your PIN.
-              Consecutive 5 times wrong attemps will get you banned!
+              Verify yourself. Enter your PIN. Consecutive 5 times wrong attemps
+              will get you banned!
             </Text>
           </View>
 
@@ -181,7 +203,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
                 <Text style={styles.input}>{letters[3] ? '*' : ' '}</Text>
                 <Text style={styles.input}>{letters[4] ? '*' : ' '}</Text>
               </View>
-              <TouchableOpacity onPress={() => verifyPin()}>
+              <TouchableOpacity onPress={verifyPin}>
                 <FontAwesome6Icon
                   name="arrow-right"
                   size={32}
