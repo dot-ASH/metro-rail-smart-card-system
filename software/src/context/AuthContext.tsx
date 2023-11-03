@@ -25,8 +25,10 @@ interface userData {
   name: string;
   address: string;
   station: any;
+  id: number;
   phn_no: string;
   user_data: userSecureData[];
+  default_index: number;
 }
 
 interface AuthContextType {
@@ -63,28 +65,30 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       let {data, error} = await supabase
         .from('user')
         .select(
-          'name,address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
+          'id, name,address, station(id, distance, station_code, station_name), phn_no, default_index, user_data(user_index, balance, verify_pin)',
         )
+        .order('id')
         .eq('phn_no', sessionPhn);
 
       if (data) {
         setUsers(data);
       } else {
-        console.log(error);
+        console.log('getUserAuth', error);
       }
     }
     if (sessionMail) {
       let {data, error} = await supabase
         .from('user')
         .select(
-          'name, address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
+          'id, name, address, station(id, distance, station_code, station_name), phn_no,default_index, user_data(user_index, balance, verify_pin)',
         )
+        .order('id')
         .eq('email', sessionMail);
 
       if (data) {
         setUsers(data);
       } else {
-        console.log(error);
+        console.log('getUserAuth', error);
       }
     }
   }, [sessionPhn, sessionMail]);

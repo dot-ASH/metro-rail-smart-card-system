@@ -5,6 +5,7 @@ import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
   LayoutAnimation,
+  Linking,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -33,11 +34,11 @@ import {fonts} from '../style/fonts';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
-import OnboardingScreen from './OnboardingScreen';
 import GestureRecognizer from 'react-native-swipe-gestures';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import Draggable from 'react-native-draggable';
 import DropDownPicker from 'react-native-dropdown-picker';
+import {REG_URL} from '@env';
 
 if (
   Platform.OS === 'android' &&
@@ -61,9 +62,9 @@ interface StationDataProps {
   distance: number;
 }
 
-interface StationNameProps {
+interface DropDownProps {
   label: string;
-  value: string;
+  value: string | number;
 }
 
 const PASS_REGEX = /^\d{5}$/;
@@ -71,8 +72,9 @@ const SCREEN_WIDTH = Dimensions.get('screen').width;
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 
 function Profile({navigation}: NavigationScreenProp): JSX.Element {
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
-  const {user, setUsers} = useUserInfo();
+  const {darkMode} = useContext(ThemeContext);
+  const {user, refreshModule} = useUserInfo();
+  const userIndex = user[0]?.default_index;
   const [dialog, setDialog] = useState(false);
   const [alert, setAlert] = useState('');
   const [elavatedBg, setElavatedBg] = useState(false);
@@ -97,17 +99,20 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
   });
 
   const [stationData, setStationData] = useState<StationDataProps[]>();
-  const [stationName, setStationName] = useState<StationNameProps[]>([]);
-  const [visible, setVisible] = useState<boolean>();
+  const [stationName, setStationName] = useState<DropDownProps[]>([]);
+  const [userName, setUserName] = useState<DropDownProps[]>([]);
   const [dropDownOpen, setDropDownOpen] = useState(false);
+  const [userSwitchOpen, setUserSwitchOpen] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [sortValue, setSortValue] = useState('');
+  const [userValue, setUserValue] = useState(userIndex);
   const [items, setItems] = useState([
     {label: 'Sorted by recent', value: 'recent'},
     {label: 'Sorted by high amount', value: 'amount'},
   ]);
 
   const isDarkMode = darkMode;
+  const defaultIndex = user[0].default_index;
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -136,7 +141,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         value === 'true' ? setPushNoti(true) : setPushNoti(false);
       }
     } catch (error: any) {
-      console.log(error);
+      console.log('getStorage:', error);
     }
   };
 
@@ -144,7 +149,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
     try {
       await AsyncStorage.setItem(valueName, value);
     } catch (error: any) {
-      console.log(error);
+      console.log('setStorage:', error);
     }
   };
 
@@ -179,7 +184,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
       const {error} = await supabase
         .from('user_data')
         .update({verify_pin: hashedpPIN})
-        .eq('phn_no', user[0].phn_no);
+        .eq('id', user[defaultIndex]?.id);
       if (error) {
         setIfLoading(false);
         setAlertText('Somethings wrong! try again');
@@ -253,19 +258,26 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
   }, []);
 
   const updateUser = useCallback(async () => {
-    if (sortValue && sortValue !== user[0].address) {
+    if (sortValue && sortValue !== user[defaultIndex]?.address) {
       const {error} = await supabase
         .from('user')
         .update({address: sortValue})
-        .eq('phn_no', user[0].phn_no);
+        .eq('id', user[defaultIndex]?.id);
     }
-  }, [sortValue, user]);
+  }, [defaultIndex, sortValue, user]);
 
   const setUserD = async () => {
-    const {error} = await supabase
-      .from('user')
-      .update({address: null})
-      .eq('phn_no', user[0].phn_no);
+    // const {error} = await supabase
+    //   .from('user')
+    //   .update({address: null})
+    //   .eq('phn_no', user[defaultIndex]?.phn_no);
+  };
+
+  const applyReg = () => {
+    const regUrl = REG_URL;
+    Linking.openURL(regUrl).catch(err =>
+      console.error('Error opening link: ', err),
+    );
   };
 
   useEffect(() => {
@@ -290,6 +302,39 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
       setLoading(true);
     }
   }, [stationData]);
+
+  useEffect(() => {
+    if (user) {
+      setLoading(false);
+      let newUser = user?.map((obj, index) => {
+        return {
+          label: obj.name,
+          value: index,
+        };
+      });
+      setUserName(newUser);
+    } else {
+      setLoading(true);
+    }
+  }, [user]);
+
+  const switchId = async (value: any) => {
+    const {data} = await supabase.auth.getSession();
+    const response = data?.session?.user.phone
+      ? await supabase
+          .from('user')
+          .update({default_index: value.value})
+          .eq('phn_no', data?.session?.user.phone)
+      : await supabase
+          .from('user')
+          .update({default_index: value.value})
+          .eq('email', data?.session?.user.email);
+    if (response.error) {
+      console.log('switching', response.error.message);
+    } else {
+      refreshModule();
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, backgroundStyle]}>
@@ -564,13 +609,60 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
           <View style={styles.profileDp}>
             <View style={styles.dp}>
               <FontAwesome5Icon
-                name="user-astronaut"
+                name={defaultIndex === 0 ? 'user-astronaut' : 'user-graduate'}
                 size={84}
                 color={colors.DARK}
               />
             </View>
             <View style={styles.gap20}>
-              <Text style={[styles.name, textStyle]}>{user[0].name}</Text>
+              <View>
+                {user.length < 2 ? (
+                  <Text style={[styles.name, textStyle]}>
+                    {user[defaultIndex]?.name}
+                  </Text>
+                ) : (
+                  <DropDownPicker
+                    open={userSwitchOpen}
+                    value={userValue}
+                    items={userName}
+                    setOpen={setUserSwitchOpen}
+                    setValue={setUserValue}
+                    setItems={setUserName}
+                    style={styles.sort}
+                    textStyle={[textStyle, {textAlign: 'right', flex: 0}]}
+                    listItemLabelStyle={textStyle}
+                    placeholder={user[defaultIndex]?.name}
+                    placeholderStyle={[textStyle, styles.name]}
+                    labelStyle={[textStyle, styles.name]}
+                    dropDownContainerStyle={{
+                      backgroundColor: isDarkMode ? '#3B3637' : '#E7E0DB',
+                      borderWidth: 0,
+                      elevation: 10,
+                      paddingHorizontal: 12,
+                      paddingBottom: 15,
+                      paddingTop: 10,
+                      borderRadius: 10,
+                      maxWidth: 250,
+                      justifyContent: 'center',
+                      flex: 0,
+                      alignSelf: 'center',
+                    }}
+                    showTickIcon={true}
+                    ArrowDownIconComponent={() => (
+                      <Entypo name="chevron-down" size={16} style={textStyle} />
+                    )}
+                    ArrowUpIconComponent={({style}) => (
+                      <Entypo name="chevron-up" size={16} style={textStyle} />
+                    )}
+                    TickIconComponent={({style}) => (
+                      <Entypo name="check" size={16} style={textStyle} />
+                    )}
+                    scrollViewProps={{endFillColor: 'black'}}
+                    loading={isLoading}
+                    onSelectItem={value => switchId(value)}
+                  />
+                )}
+              </View>
               <Text
                 style={[
                   textStyle,
@@ -578,7 +670,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                   semiTransparent,
                   {borderRadius: 5, paddingHorizontal: 10, paddingBottom: 3},
                 ]}>
-                +{user[0].phn_no}
+                +{user[defaultIndex]?.phn_no}
               </Text>
               <View>
                 <DropDownPicker
@@ -592,7 +684,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                   textStyle={[textStyle, {textAlign: 'right', flex: 0}]}
                   listItemLabelStyle={textStyle}
                   placeholder={
-                    user[0].station?.station_name ||
+                    user[defaultIndex]?.station.station_name ||
                     "You haven't set your station yet"
                   }
                   placeholderStyle={[textStyle, styles.address]}
@@ -604,8 +696,10 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                     paddingBottom: 15,
                     paddingTop: 10,
                     borderRadius: 10,
-                    width: '65%',
-                    marginLeft: sortValue === '' ? 0 : -50,
+                    maxWidth: 250,
+                    justifyContent: 'center',
+                    flex: 0,
+                    alignSelf: 'center',
                   }}
                   showTickIcon={true}
                   ArrowDownIconComponent={() => (
@@ -635,10 +729,23 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.7, textAlign: 'right'}}
+                style={{flex: 0.65, textAlign: 'right'}}
               />
               <TouchableOpacity style={{flex: 1}} onPress={setUserD}>
                 <Text style={[textStyle, styles.itemName]}>Edit profile</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.menu}>
+              <MaterialIcons
+                name="add-circle"
+                size={34}
+                color={
+                  isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
+                }
+                style={{flex: 0.65, textAlign: 'right'}}
+              />
+              <TouchableOpacity style={{flex: 1}} onPress={applyReg}>
+                <Text style={[textStyle, styles.itemName]}>Add Account</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.menu}>
@@ -648,7 +755,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.7, textAlign: 'right'}}
+                style={{flex: 0.65, textAlign: 'right'}}
               />
               <TouchableOpacity
                 style={{flex: 1}}
@@ -667,7 +774,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.7, textAlign: 'right'}}
+                style={{flex: 0.65, textAlign: 'right'}}
               />
               <TouchableOpacity
                 style={{flex: 1}}
@@ -686,7 +793,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.7, textAlign: 'right'}}
+                style={{flex: 0.65, textAlign: 'right'}}
               />
               <TouchableOpacity
                 onPress={() => {
@@ -752,7 +859,7 @@ const styles = StyleSheet.create({
   menuContainer: {
     flex: 0.8,
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     gap: 30,
   },
@@ -761,7 +868,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    gap: 40,
+    gap: 45,
   },
   itemName: {
     fontFamily: fonts.KarmaBold,

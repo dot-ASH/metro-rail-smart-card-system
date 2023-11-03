@@ -37,12 +37,12 @@ let letters: string[] = [];
 function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   const {darkMode} = useContext(ThemeContext);
   const {user} = useUserInfo();
-  const isDarkMode = darkMode;
   const [alert, setAlert] = useState<string>();
   const [isLoading, setLoading] = useState(false);
   const [isBlocked, setBlock] = useState<boolean>(false);
   const [count, setCount] = useState<number>(1);
-
+  const isDarkMode = darkMode;
+  const defaultIndex = user[0]?.default_index;
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
   };
@@ -61,11 +61,11 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
 
   const blockEm = async () => {
     const {error} = await supabase.from('suspend').insert({
-      user_index: user[0].user_data[0].user_index,
+      user_index: user[defaultIndex]?.user_data[0].user_index,
       reason: 'wrong attempts',
     });
     if (error) {
-      console.log(error.message);
+      console.log('blockEm', error.message);
       return;
     }
     setBlock(true);
@@ -75,13 +75,13 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
     const {data, error} = await supabase
       .from('suspend')
       .select('*')
-      .eq('user_index', user[0]?.user_data[0]?.user_index);
+      .eq('user_index', user[defaultIndex]?.user_data[0]?.user_index);
     if (error) {
-      console.log(error.message);
+      console.log('getBlock', error.message);
       return;
     }
     data.length > 0 ? setBlock(true) : setBlock(false);
-  }, [user]);
+  }, [defaultIndex, user]);
 
   const setAlertText = (text: string) => {
     setAlert(text);
@@ -96,7 +96,10 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
       return;
     }
     setLoading(true);
-    const pinMatches = await compareSHA(input, user[0].user_data[0].verify_pin);
+    const pinMatches = await compareSHA(
+      input,
+      user[defaultIndex]?.user_data[0].verify_pin,
+    );
     if (pinMatches) {
       setInput('');
       letters = [];
@@ -118,14 +121,14 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   };
 
   useEffect(() => {
-    if (user[0]) {
+    if (user[defaultIndex]) {
       getBlocked();
     }
-  }, [getBlocked, user]);
+  }, [defaultIndex, getBlocked, user]);
 
   useEffect(() => {
-    user[0] ? setLoading(false) : setLoading(true);
-  }, [user]);
+    user[defaultIndex] ? setLoading(false) : setLoading(true);
+  }, [defaultIndex, user]);
 
   useEffect(() => {
     const handleBackButton = () => {

@@ -5,11 +5,11 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 #include <Data.h>
-#include <Ssid.h>
+#include <ssid.h>
 
 #define LED_BUILTIN 2
 
-Supabase db;
+// Supabase db;
 
 void setup()
 {
@@ -26,18 +26,18 @@ void setup()
   Serial.print("ESP8266 already connected WiFi with IP: ");
   Serial.println(WiFi.localIP());
 
-  db.begin(supabase_url, anon_key);
-  String read = db.from("user").select("balance").eq("id", "1").doSelect();
-  Serial.println(read);
-  String jsonString = "[{\"balance\":400}]";
-  DynamicJsonDocument doc(200);
-  deserializeJson(doc, jsonString);
-  JsonObject obj = doc[0];
+  // db.begin(supabase_url, anon_key);
+  // String read = db.from("user_data").select("balance").eq("id", "1").doSelect();
+  // Serial.println(read);
+  // String jsonString = read;
+  // DynamicJsonDocument doc(200);
+  // deserializeJson(doc, read);
+  // JsonObject obj = doc[0];
 
-  int balance = obj["balance"];
-  Serial.print("Balance: ");
-  Serial.println(balance);
-  db.urlQuery_reset();
+  // String balance = obj["balance"];
+  // Serial.print("Balance: ");
+  // Serial.println(balance);
+  // db.urlQuery_reset();
 }
 
 void loop()

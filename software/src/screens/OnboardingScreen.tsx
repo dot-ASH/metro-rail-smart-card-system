@@ -69,7 +69,7 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
     fetchIPAddress();
   }, []);
 
-  const youRegUrl = REG_URL;
+  const regUrl = REG_URL;
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -116,7 +116,7 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
                 color={colors.LIGHT_HIGHLIGHTED}
               />
               <TouchableOpacity
-                onPress={() => openLink(youRegUrl)}
+                onPress={() => openLink(regUrl)}
                 style={styles.btnPadding}>
                 <Text style={[styles.buttonTitle, textStyle]}>
                   Apply For Registration

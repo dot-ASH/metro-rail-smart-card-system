@@ -49,6 +49,7 @@ function Home({navigation}: any): JSX.Element {
   const [elavatedBg, setElavatedBg] = useState(false);
 
   const isDarkMode = darkMode;
+  const defaultIndex = user[0].default_index;
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -149,8 +150,10 @@ function Home({navigation}: any): JSX.Element {
   };
 
   const decryptBalance = async () => {
-    if (typeof user[0]?.user_data[0].balance !== 'undefined') {
-      const newBalance = await decryptHash(user[0]?.user_data[0].balance);
+    if (typeof user[defaultIndex]?.user_data[0].balance !== 'undefined') {
+      const newBalance = await decryptHash(
+        user[defaultIndex]?.user_data[0].balance,
+      );
       setBalance(newBalance);
     }
   };
@@ -287,8 +290,10 @@ function Home({navigation}: any): JSX.Element {
                     {fontSize: 40, fontFamily: fonts.Quantico},
                     textStyleAlt,
                   ]}>
-                  {user[0]
-                    ? fancify(user[0]?.user_data[0].user_index.toString())
+                  {user[defaultIndex]
+                    ? fancify(
+                        user[defaultIndex]?.user_data[0].user_index.toString(),
+                      )
                     : null}
                 </Text>
                 <Text
@@ -300,7 +305,7 @@ function Home({navigation}: any): JSX.Element {
                     },
                     textStyleAlt,
                   ]}>
-                  {user[0]?.name}
+                  {user[defaultIndex]?.name}
                 </Text>
               </View>
             </View>

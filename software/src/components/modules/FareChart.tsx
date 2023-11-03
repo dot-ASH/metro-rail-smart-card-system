@@ -44,16 +44,17 @@ interface StationDataItemProps {
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const FareChart = () => {
   const navigaton = useNavigation();
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
   const {user, refresh} = useUserInfo();
+  const {darkMode} = useContext(ThemeContext);
+  const isDarkMode = darkMode;
+  const defaultIndex = user[0].default_index;
   const [stationData, setStationData] = useState<StationDataProps[]>([]);
   const [stationName, setStationName] = useState<StationNameProps[]>([]);
   const [visible, setVisible] = useState<boolean>();
   const [dropDownOpen, setDropDownOpen] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [sortValue, setSortValue] = useState(user[0].address || '');
 
-  const isDarkMode = darkMode;
+  const [sortValue, setSortValue] = useState(user[defaultIndex]?.address || '');
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -245,7 +246,9 @@ const FareChart = () => {
                   {fontFamily: fonts.Vollkorn, fontSize: 16},
                 ]}
                 listItemLabelStyle={isDarkMode ? textStyle : textStyleAlt}
-                placeholder={user[0].station?.station_name || 'unknown station'}
+                placeholder={
+                  user[defaultIndex]?.station?.station_name || 'unknown station'
+                }
                 placeholderStyle={[
                   textStyle,
                   {fontFamily: fonts.KarmaBold, marginTop: 5, fontSize: 14},

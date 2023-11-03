@@ -3,6 +3,7 @@
 
 import React, {useContext, useEffect, useState} from 'react';
 import {
+  DevSettings,
   Dimensions,
   Keyboard,
   LayoutAnimation,
@@ -159,8 +160,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           let response = await supabase
             .from('user')
             .select(
-              'name, address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
+              'id, name, address, station(id, distance, station_code, station_name), phn_no, default_index, user_data(user_index, balance, verify_pin)',
             )
+            .order('id')
             .eq('phn_no', input);
           if (response.data) {
             setUsers(response?.data);
@@ -171,8 +173,9 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
           let response = await supabase
             .from('user')
             .select(
-              'name, address, station(id, distance, station_code, station_name), phn_no, user_data(user_index, balance, verify_pin)',
+              'id, name, address, station(id, distance, station_code, station_name), phn_no, default_index, user_data(user_index, balance, verify_pin)',
             )
+            .order('id')
             .eq('email', emailAddress);
           if (response.data) {
             setUsers(response?.data);
@@ -186,7 +189,8 @@ function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
         // navigation.navigate('Verify');
         setAlertText('Login Successful');
         setTimeout(() => {
-          RNRestart.restart();
+          // RNRestart.restart();
+          DevSettings.reload();
         }, 1000);
       } else {
         setAlertText('Something went wrong!');

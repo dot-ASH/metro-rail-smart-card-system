@@ -50,6 +50,7 @@ const Payment = ({onCancle}: paymentProps) => {
   const [balanceStatus, setBalanceStatus] = useState('');
 
   const isDarkMode = darkMode;
+  const defaultIndex = user[0]?.default_index;
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -132,7 +133,6 @@ const Payment = ({onCancle}: paymentProps) => {
   };
 
   const getBalanceStatus = async () => {
-    // let currentBalance = 250;
     if (typeof currentBalance === 'number') {
       if (currentBalance >= 500) {
         setBalanceStatus('good amount of');
@@ -147,7 +147,7 @@ const Payment = ({onCancle}: paymentProps) => {
   };
 
   useEffect(() => {
-    decryptBalance(user[0]?.user_data[0].balance);
+    decryptBalance(user[defaultIndex]?.user_data[0].balance);
     getBalanceStatus();
   });
 

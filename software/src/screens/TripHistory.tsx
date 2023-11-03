@@ -52,6 +52,7 @@ function TripHistory(): JSX.Element {
     {label: 'Sorted by high amount', value: 'amount'},
   ]);
   const isDarkMode = darkMode;
+  const defaultIndex = user[0].default_index;
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -76,14 +77,14 @@ function TripHistory(): JSX.Element {
       .select(
         '*, station_code_to!inner(station_name), station_code_from!inner(station_name)',
       )
-      .eq('user_index', user[0].user_data[0].user_index)
+      .eq('user_index', user[defaultIndex].user_data[0].user_index)
       .eq('status', true)
       .eq('type', 'spnt');
     if (!error) {
       // console.log(data);
       setTripData(data);
     }
-  }, [user]);
+  }, [defaultIndex, user]);
 
   useEffect(() => {
     getTripData();

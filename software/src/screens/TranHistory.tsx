@@ -43,6 +43,7 @@ function TranHistory({navigation}: any): JSX.Element {
     {label: 'Sorted by high amount', value: 'amount'},
   ]);
   const isDarkMode = darkMode;
+  const defaultIndex = user[0].default_index;
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -65,12 +66,12 @@ function TranHistory({navigation}: any): JSX.Element {
     const {data, error} = await supabase
       .from('transaction')
       .select('id, transId, amount , type, created_at')
-      .eq('user_index', user[0].user_data[0].user_index)
+      .eq('user_index', user[defaultIndex].user_data[0].user_index)
       .eq('status', true);
     if (!error) {
       setTransData(data);
     }
-  }, [user]);
+  }, [defaultIndex, user]);
 
   useEffect(() => {
     getTransData();
