@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useCallback, useContext, useEffect, useState} from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import {
   Dimensions,
   LayoutAnimation,
@@ -17,20 +17,21 @@ import {
   TouchableOpacity,
   UIManager,
   View,
+  Image,
 } from 'react-native';
-import {ThemeContext} from '../context/ThemeContext';
-import {colors} from '../style/colors';
-import {useUserInfo} from '../context/AuthContext';
+import { ThemeContext } from '../context/ThemeContext';
+import { colors } from '../style/colors';
+import { useUserInfo } from '../context/AuthContext';
 import supabase from '../data/supaBaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import Customloading from '../components/CustomLoading';
 import CustomDialog from '../components/CustomDialog';
-import {sha256HashPin, encryptHash, decryptHash} from '../security/encryp';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {MainStackParamList} from '../navigation/MainStack';
+import { sha256HashPin, encryptHash, decryptHash } from '../security/encryp';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../navigation/MainStack';
 import Feather from 'react-native-vector-icons/Feather';
-import {fonts} from '../style/fonts';
+import { fonts } from '../style/fonts';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -38,7 +39,11 @@ import GestureRecognizer from 'react-native-swipe-gestures';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import Draggable from 'react-native-draggable';
 import DropDownPicker from 'react-native-dropdown-picker';
-import {REG_URL} from '@env';
+import ImagePicker, {
+  launchImageLibrary,
+  ImageLibraryOptions,
+} from 'react-native-image-picker';
+import { REG_URL } from '@env';
 
 if (
   Platform.OS === 'android' &&
@@ -71,9 +76,9 @@ const PASS_REGEX = /^\d{5}$/;
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 
-function Profile({navigation}: NavigationScreenProp): JSX.Element {
-  const {darkMode} = useContext(ThemeContext);
-  const {user, refreshModule} = useUserInfo();
+function Profile({ navigation }: NavigationScreenProp): JSX.Element {
+  const { darkMode } = useContext(ThemeContext);
+  const { user, refreshModule } = useUserInfo();
   const userIndex = user[0]?.default_index;
   const [dialog, setDialog] = useState(false);
   const [alert, setAlert] = useState('');
@@ -84,20 +89,10 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
   const [ifSuccess, setIfSuccess] = useState(false);
   const [ifWrong, setIfWrong] = useState(false);
   const [psModule, setPassModule] = useState(false);
+  const [editModule, setEditModule] = useState(false);
   const [settingModule, setSettingModule] = useState(false);
   const [defaultDark, setDefaultDark] = useState(false);
   const [pushNoti, setPushNoti] = useState(false);
-  const [passForm, setPassForm] = useState({
-    newPass: '',
-    confirmPass: '',
-  });
-
-  const [dialogInfo, setDialogInfo] = useState({
-    title: '',
-    text: '',
-    onConfirm: () => {},
-  });
-
   const [stationData, setStationData] = useState<StationDataProps[]>();
   const [stationName, setStationName] = useState<DropDownProps[]>([]);
   const [userName, setUserName] = useState<DropDownProps[]>([]);
@@ -106,10 +101,22 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
   const [isLoading, setLoading] = useState(false);
   const [sortValue, setSortValue] = useState('');
   const [userValue, setUserValue] = useState(userIndex);
-  const [items, setItems] = useState([
-    {label: 'Sorted by recent', value: 'recent'},
-    {label: 'Sorted by high amount', value: 'amount'},
-  ]);
+
+  const [passForm, setPassForm] = useState({
+    newPass: '',
+    confirmPass: '',
+  });
+
+  const [editForm, setEditForm] = useState({
+    newName: '',
+    newEmail: '',
+  });
+
+  const [dialogInfo, setDialogInfo] = useState({
+    title: '',
+    text: '',
+    onConfirm: () => { },
+  });
 
   const isDarkMode = darkMode;
   const defaultIndex = user[0].default_index;
@@ -160,79 +167,10 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
     }, 6000);
   };
 
-  const onChangePassHandler = (value: string, name: string) => {
-    setPassForm(form => ({
-      ...form,
-      [name]: value,
-    }));
-  };
-
-  const changePin = async () => {
-    clearCustoms();
-    let errorLog = '';
-    passForm.newPass !== passForm.confirmPass
-      ? (errorLog = "PIN doesn't match")
-      : !PASS_REGEX.test(passForm.newPass)
-      ? (errorLog = 'Enter a valid PIN')
-      : null;
-
-    if (errorLog) {
-      setAlertText(errorLog);
-    } else {
-      setIfLoading(true);
-      const hashedpPIN = await sha256HashPin(passForm.newPass);
-      const {error} = await supabase
-        .from('user_data')
-        .update({verify_pin: hashedpPIN})
-        .eq('id', user[defaultIndex]?.id);
-      if (error) {
-        setIfLoading(false);
-        setAlertText('Somethings wrong! try again');
-      } else {
-        setIfLoading(false);
-        setAlertText('Your PIN has been changed');
-      }
-    }
-  };
-
-  const handleDeafultDark = () => {
-    setDefaultDark(prev => !prev);
-    // if (defaultDark) {
-    //   setDefaultDark(false);
-    //   setStorageValue('defaultDarkValue', 'false');
-    // } else {
-    //   setDefaultDark(true);
-    //   setStorageValue('defaultDarkValue', 'true');
-    // }
-  };
-
-  const handlePushNoti = () => {
-    if (defaultDark) {
-      setPushNoti(false);
-      setStorageValue('pushNotiValue', 'false');
-    } else {
-      setPushNoti(true);
-      setStorageValue('pushNotiValue', 'true');
-    }
-  };
-
-  const signout = async () => {
-    const {error} = await supabase.auth.signOut();
-    if (!error) {
-      setDialog(false);
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'AuthStack'}],
-      });
-
-      navigation.navigate('AuthStack');
-    }
-  };
-
   const getAnimation = () => {
     LayoutAnimation.configureNext({
       duration: 250,
-      create: {type: 'easeIn', property: 'opacity'},
+      create: { type: 'easeIn', property: 'opacity' },
     });
   };
 
@@ -243,12 +181,37 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
     setIfWrong(false);
   };
 
+  const imageSelect = async () => {
+    const options: ImageLibraryOptions = {
+      mediaType: 'photo',
+      includeBase64: true,
+      maxHeight: 200,
+      maxWidth: 200,
+    };
+
+    const result = await launchImageLibrary(options);
+  };
+
+  const onChangePassHandler = (value: string, name: string) => {
+    setPassForm(form => ({
+      ...form,
+      [name]: value,
+    }));
+  };
+
+  const onChangeEditHandler = (value: string, name: string) => {
+    setEditForm(form => ({
+      ...form,
+      [name]: value,
+    }));
+  };
+
   useEffect(() => {
     getStorageValue();
   }, []);
 
   const getStation = useCallback(async () => {
-    const {data, error} = await supabase
+    const { data, error } = await supabase
       .from('station')
       .select('station_code, station_name, distance')
       .order('distance');
@@ -259,25 +222,31 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
 
   const updateUser = useCallback(async () => {
     if (sortValue && sortValue !== user[defaultIndex]?.address) {
-      const {error} = await supabase
+      const { error } = await supabase
         .from('user')
-        .update({address: sortValue})
+        .update({ address: sortValue })
         .eq('id', user[defaultIndex]?.id);
     }
   }, [defaultIndex, sortValue, user]);
 
-  const setUserD = async () => {
-    // const {error} = await supabase
-    //   .from('user')
-    //   .update({address: null})
-    //   .eq('phn_no', user[defaultIndex]?.phn_no);
-  };
-
-  const applyReg = () => {
-    const regUrl = REG_URL;
-    Linking.openURL(regUrl).catch(err =>
-      console.error('Error opening link: ', err),
-    );
+  const switchId = async (value: any) => {
+    setLoading(true);
+    const { data } = await supabase.auth.getSession();
+    const response = data?.session?.user.phone
+      ? await supabase
+        .from('user')
+        .update({ default_index: value.value })
+        .eq('phn_no', data?.session?.user.phone)
+      : await supabase
+        .from('user')
+        .update({ default_index: value.value })
+        .eq('email', data?.session?.user.email);
+    if (response.error) {
+      console.log('switching', response.error.message);
+    } else {
+      refreshModule();
+      setLoading(false)
+    }
   };
 
   useEffect(() => {
@@ -318,21 +287,102 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
     }
   }, [user]);
 
-  const switchId = async (value: any) => {
-    const {data} = await supabase.auth.getSession();
-    const response = data?.session?.user.phone
-      ? await supabase
+  const editProfile = async () => {
+    clearCustoms();
+    let errorLog = '';
+    editForm.newName === '' && editForm.newEmail === ''
+      ? (errorLog = "You haven't made any changes")
+      : null;
+
+    if (!errorLog) {
+      setIfLoading(true);
+      if (editForm.newName) {
+        const { error } = await supabase
           .from('user')
-          .update({default_index: value.value})
-          .eq('phn_no', data?.session?.user.phone)
-      : await supabase
+          .update({ name: editForm.newName })
+          .eq('id', user[defaultIndex]?.id);
+        error ? (errorLog = 'Somethings wrong! try again') : null;
+      } else if (editForm.newEmail) {
+        const { error } = await supabase
           .from('user')
-          .update({default_index: value.value})
-          .eq('email', data?.session?.user.email);
-    if (response.error) {
-      console.log('switching', response.error.message);
+          .update({ email: editForm.newEmail })
+          .eq('id', user[defaultIndex]?.id);
+        error ? (errorLog = 'Somethings wrong! try again') : null;
+      }
+      setIfLoading(false);
+      setAlertText('Your profile has been edited');
     } else {
-      refreshModule();
+      setIfLoading(false);
+      setAlertText(errorLog);
+    }
+  };
+
+  const applyReg = () => {
+    const regUrl = REG_URL;
+    Linking.openURL(regUrl).catch(err =>
+      console.error('Error opening link: ', err),
+    );
+  };
+
+  const changePin = async () => {
+    clearCustoms();
+    let errorLog = '';
+    passForm.newPass !== passForm.confirmPass
+      ? (errorLog = "PIN doesn't match")
+      : !PASS_REGEX.test(passForm.newPass)
+        ? (errorLog = 'Enter a valid five number PIN')
+        : null;
+
+    if (errorLog) {
+      setAlertText(errorLog);
+    } else {
+      setIfLoading(true);
+      const hashedpPIN = await sha256HashPin(passForm.newPass);
+      const { error } = await supabase
+        .from('user_data')
+        .update({ verify_pin: hashedpPIN })
+        .eq('id', user[defaultIndex]?.id);
+      if (error) {
+        setIfLoading(false);
+        setAlertText('Somethings wrong! try again');
+      } else {
+        setIfLoading(false);
+        setAlertText('Your PIN has been changed');
+      }
+    }
+  };
+
+  const signout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setDialog(false);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'AuthStack' }],
+      });
+
+      navigation.navigate('AuthStack');
+    }
+  };
+
+  const handleDeafultDark = () => {
+    setDefaultDark(prev => !prev);
+    // if (defaultDark) {
+    //   setDefaultDark(false);
+    //   setStorageValue('defaultDarkValue', 'false');
+    // } else {
+    //   setDefaultDark(true);
+    //   setStorageValue('defaultDarkValue', 'true');
+    // }
+  };
+
+  const handlePushNoti = () => {
+    if (defaultDark) {
+      setPushNoti(false);
+      setStorageValue('pushNotiValue', 'false');
+    } else {
+      setPushNoti(true);
+      setStorageValue('pushNotiValue', 'true');
     }
   };
 
@@ -344,7 +394,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         translucent={true}
       />
       {elavatedBg ? <View style={styles.elavatedbg} /> : null}
-
+      <Customloading isVisible={isLoading} />
       {/* CUSTOMS */}
       <CustomDialog
         isVisible={dialog}
@@ -361,7 +411,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
           <Draggable
             x={SCREEN_WIDTH / 2 - (SCREEN_WIDTH - 40) / 2}
             y={SCREEN_HEIGHT / 3}
-            touchableOpacityProps={{activeOpacity: 1}}>
+            touchableOpacityProps={{ activeOpacity: 1 }}>
             <View
               style={[
                 backgroundStyle,
@@ -404,7 +454,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                     setPassModule(false);
                     setElavatedBg(false);
                   }}
-                  style={{alignSelf: 'flex-end'}}>
+                  style={{ alignSelf: 'flex-end' }}>
                   <FontAwesome6Icon
                     size={20}
                     name="xmark"
@@ -422,10 +472,18 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                   gap: 20,
                   marginTop: 20,
                 }}>
-                <View style={[styles.inputContainer, {width: '80%'}]}>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    { width: '80%', paddingHorizontal: 20, gap: 10 },
+                  ]}>
                   <Text style={[textStyle, styles.label]}>New PIN: </Text>
                   <TextInput
-                    style={[textStyle, styles.textInput]}
+                    style={[
+                      textStyle,
+                      styles.textInput,
+                      { fontSize: 20, letterSpacing: 4 },
+                    ]}
                     value={passForm.newPass}
                     onChangeText={value =>
                       onChangePassHandler(value, 'newPass')
@@ -434,7 +492,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                   />
                 </View>
 
-                <View style={[styles.inputContainer, {width: '80%'}]}>
+                <View style={[styles.inputContainer, { width: '80%' }]}>
                   <Text style={[textStyle, styles.label]}>Confirm PIN: </Text>
                   <TextInput
                     style={[textStyle, styles.textInput]}
@@ -464,141 +522,250 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         </View>
       ) : null}
 
+      {/* EDIT PROFILE */}
+      {editModule ? (
+        <View style={styles.gestureStyle}>
+          <Draggable
+            x={SCREEN_WIDTH / 2 - (SCREEN_WIDTH - 40) / 2}
+            y={SCREEN_HEIGHT / 3}
+            touchableOpacityProps={{ activeOpacity: 1 }}>
+            <View
+              style={[
+                backgroundStyle,
+                {
+                  width: SCREEN_WIDTH - 40,
+                  borderRadius: 20,
+                  elevation: 20,
+                  padding: 10,
+                },
+              ]}>
+              <Customloading isVisible={ifLoading} />
+              <View
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode
+                    ? colors.DARK_LIGHT
+                    : 'rgba(0, 0, 0, 0.1)',
+                  width: '100%',
+                  paddingVertical: 20,
+                  paddingHorizontal: 30,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={[
+                    textStyle,
+                    {
+                      textAlign: 'center',
+                      fontFamily: fonts.Bree,
+                      fontSize: 20,
+                    },
+                  ]}>
+                  Edit Profile Info
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    getAnimation();
+                    clearCustoms();
+                    setEditModule(false);
+                    setElavatedBg(false);
+                  }}
+                  style={{ alignSelf: 'flex-end' }}>
+                  <FontAwesome6Icon
+                    size={20}
+                    name="xmark"
+                    style={[textStyle]}
+                  />
+                </TouchableOpacity>
+              </View>
+              <View
+                style={{
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  gap: 20,
+                  marginTop: 20,
+                }}>
+                <View style={[styles.inputContainer, { width: '80%' }]}>
+                  <Text style={[textStyle, styles.label]}>Name: </Text>
+                  <TextInput
+                    style={[textStyle, styles.textInput]}
+                    value={editForm.newName}
+                    onChangeText={value =>
+                      onChangeEditHandler(value, 'newName')
+                    }
+                    placeholder={user[defaultIndex].name}
+                  />
+                </View>
+
+                <View style={[styles.inputContainer, { width: '80%' }]}>
+                  <Text style={[textStyle, styles.label]}>Email: </Text>
+                  <TextInput
+                    style={[textStyle, styles.textInput]}
+                    value={editForm.newEmail}
+                    onChangeText={value =>
+                      onChangeEditHandler(value, 'newEmail')
+                    }
+                    placeholder={user[defaultIndex].email}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={[
+                    backgroundStyleAlt,
+                    {
+                      alignSelf: 'center',
+                      borderRadius: 10,
+                      padding: 10,
+                      marginBottom: 10,
+                    },
+                  ]}
+                  onPress={editProfile}>
+                  <Text style={[styles.label, textStyleAlt]}>Submit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Draggable>
+        </View>
+      ) : null}
+
       {/* SETTINGS */}
       {settingModule ? (
-        <GestureRecognizer
-          onSwipeDown={() => {
-            getAnimation();
-            clearCustoms();
-            setPassModule(false);
-            setElavatedBg(false);
-          }}
-          style={styles.gestureStyle}>
-          <View
-            style={[
-              backgroundStyle,
-              {
-                width: '85%',
-                borderRadius: 20,
-                elevation: 20,
-              },
-            ]}>
-            <Customloading isVisible={ifLoading} />
+        <View style={styles.gestureStyle}>
+          <Draggable
+            x={SCREEN_WIDTH / 2 - (SCREEN_WIDTH - 40) / 2}
+            y={SCREEN_HEIGHT / 3}
+            touchableOpacityProps={{ activeOpacity: 1 }}>
             <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: isDarkMode
-                  ? colors.DARK_LIGHT
-                  : 'rgba(0, 0, 0, 0.1)',
-                width: '100%',
-                paddingVertical: 20,
-                paddingHorizontal: 30,
-                alignItems: 'center',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              <Text
-                style={[
-                  textStyle,
-                  {
-                    textAlign: 'center',
-                    fontFamily: fonts.Bree,
-                    fontSize: 20,
-                  },
-                ]}>
-                Settings
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  getAnimation();
-                  clearCustoms();
-                  setSettingModule(false);
-                  setElavatedBg(false);
-                }}
-                style={{alignSelf: 'flex-end'}}>
-                <FontAwesome6Icon size={20} name="xmark" style={textStyle} />
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                paddingVertical: 20,
-                alignItems: 'center',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                width: '100%',
-                gap: 10,
-              }}>
+              style={[
+                backgroundStyle,
+                {
+                  width: SCREEN_WIDTH - 40,
+                  borderRadius: 20,
+                  elevation: 20,
+                },
+              ]}>
+              <Customloading isVisible={ifLoading} />
               <View
-                style={[
-                  styles.inputContainer,
-                  {
-                    borderWidth: 0,
-                    width: '90%',
-                    justifyContent: 'space-between',
-                  },
-                ]}>
-                <Text style={[textStyle, styles.label]}>
-                  Default (dark mode)
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: isDarkMode
+                    ? colors.DARK_LIGHT
+                    : 'rgba(0, 0, 0, 0.1)',
+                  width: '100%',
+                  paddingVertical: 20,
+                  paddingHorizontal: 30,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <Text
+                  style={[
+                    textStyle,
+                    {
+                      textAlign: 'center',
+                      fontFamily: fonts.Bree,
+                      fontSize: 20,
+                    },
+                  ]}>
+                  Settings
                 </Text>
-                <Switch
-                  trackColor={{
-                    false: isDarkMode
-                      ? 'rgba(255, 255, 255, 0.2)'
-                      : 'rgba(0, 0, 0, 0.2)',
-                    true: isDarkMode
-                      ? 'rgba(255, 255, 255, 0.2)'
-                      : 'rgba(0, 0, 0, 0.4)',
+                <TouchableOpacity
+                  onPress={() => {
+                    getAnimation();
+                    clearCustoms();
+                    setSettingModule(false);
+                    setElavatedBg(false);
                   }}
-                  thumbColor={
-                    defaultDark && isDarkMode
-                      ? colors.LIGHT
-                      : !defaultDark && isDarkMode
-                      ? colors.LIGHT_HIGHLIGHTED
-                      : defaultDark && !isDarkMode
-                      ? colors.DARK_SHADE
-                      : colors.DARK_LIGHT
-                  }
-                  ios_backgroundColor="#3e3e3e"
-                  onValueChange={handleDeafultDark}
-                  value={defaultDark}
-                />
+                  style={{ alignSelf: 'flex-end' }}>
+                  <FontAwesome6Icon size={20} name="xmark" style={textStyle} />
+                </TouchableOpacity>
               </View>
               <View
-                style={[
-                  styles.inputContainer,
-                  {
-                    borderWidth: 0,
-                    width: '90%',
-                    justifyContent: 'space-between',
-                  },
-                ]}>
-                <Text style={[textStyle, styles.label]}>Push Notification</Text>
-                <Switch
-                  trackColor={{
-                    false: isDarkMode
-                      ? 'rgba(255, 255, 255, 0.2)'
-                      : 'rgba(0, 0, 0, 0.2)',
-                    true: isDarkMode
-                      ? 'rgba(255, 255, 255, 0.2)'
-                      : 'rgba(0, 0, 0, 0.4)',
-                  }}
-                  thumbColor={
-                    pushNoti && isDarkMode
-                      ? colors.LIGHT
-                      : !pushNoti && isDarkMode
-                      ? colors.LIGHT_HIGHLIGHTED
-                      : pushNoti && !isDarkMode
-                      ? colors.DARK_SHADE
-                      : colors.DARK_LIGHT
-                  }
-                  ios_backgroundColor="#3e3e3e"
-                  onValueChange={handlePushNoti}
-                  value={pushNoti}
-                />
+                style={{
+                  paddingVertical: 20,
+                  alignItems: 'center',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  gap: 10,
+                }}>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderWidth: 0,
+                      width: '90%',
+                      justifyContent: 'space-between',
+                    },
+                  ]}>
+                  <Text style={[textStyle, styles.label]}>
+                    Default (dark mode)
+                  </Text>
+                  <Switch
+                    trackColor={{
+                      false: isDarkMode
+                        ? 'rgba(255, 255, 255, 0.2)'
+                        : 'rgba(0, 0, 0, 0.2)',
+                      true: isDarkMode
+                        ? 'rgba(255, 255, 255, 0.2)'
+                        : 'rgba(0, 0, 0, 0.4)',
+                    }}
+                    thumbColor={
+                      defaultDark && isDarkMode
+                        ? colors.LIGHT
+                        : !defaultDark && isDarkMode
+                          ? colors.LIGHT_HIGHLIGHTED
+                          : defaultDark && !isDarkMode
+                            ? colors.DARK_SHADE
+                            : colors.DARK_LIGHT
+                    }
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={handleDeafultDark}
+                    value={defaultDark}
+                  />
+                </View>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    {
+                      borderWidth: 0,
+                      width: '90%',
+                      justifyContent: 'space-between',
+                    },
+                  ]}>
+                  <Text style={[textStyle, styles.label]}>
+                    Push Notification
+                  </Text>
+                  <Switch
+                    trackColor={{
+                      false: isDarkMode
+                        ? 'rgba(255, 255, 255, 0.2)'
+                        : 'rgba(0, 0, 0, 0.2)',
+                      true: isDarkMode
+                        ? 'rgba(255, 255, 255, 0.2)'
+                        : 'rgba(0, 0, 0, 0.4)',
+                    }}
+                    thumbColor={
+                      pushNoti && isDarkMode
+                        ? colors.LIGHT
+                        : !pushNoti && isDarkMode
+                          ? colors.LIGHT_HIGHLIGHTED
+                          : pushNoti && !isDarkMode
+                            ? colors.DARK_SHADE
+                            : colors.DARK_LIGHT
+                    }
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={handlePushNoti}
+                    value={pushNoti}
+                  />
+                </View>
               </View>
             </View>
-          </View>
-        </GestureRecognizer>
+          </Draggable>
+        </View>
       ) : null}
 
       {/* PROFILE PAGE */}
@@ -608,11 +775,25 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
         <View style={styles.profileConatiner}>
           <View style={styles.profileDp}>
             <View style={styles.dp}>
-              <FontAwesome5Icon
-                name={defaultIndex === 0 ? 'user-astronaut' : 'user-graduate'}
-                size={84}
-                color={colors.DARK}
-              />
+              {user[defaultIndex].image_url ? (
+                <Image
+                  source={{ uri: user[defaultIndex].image_url }}
+                  style={styles.img}
+                />
+              ) : (
+                <FontAwesome5Icon
+                  name={defaultIndex === 0 ? 'user-astronaut' : 'user-graduate'}
+                  size={84}
+                  color={colors.DARK}
+                />
+              )}
+              <TouchableOpacity onPress={imageSelect} style={styles.upload}>
+                <FontAwesome6Icon
+                  name="upload"
+                  size={16}
+                  color={colors.LIGHT}
+                />
+              </TouchableOpacity>
             </View>
             <View style={styles.gap20}>
               <View>
@@ -629,7 +810,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                     setValue={setUserValue}
                     setItems={setUserName}
                     style={styles.sort}
-                    textStyle={[textStyle, {textAlign: 'right', flex: 0}]}
+                    textStyle={[textStyle, { textAlign: 'right', flex: 0 }]}
                     listItemLabelStyle={textStyle}
                     placeholder={user[defaultIndex]?.name}
                     placeholderStyle={[textStyle, styles.name]}
@@ -651,13 +832,13 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                     ArrowDownIconComponent={() => (
                       <Entypo name="chevron-down" size={16} style={textStyle} />
                     )}
-                    ArrowUpIconComponent={({style}) => (
+                    ArrowUpIconComponent={({ style }) => (
                       <Entypo name="chevron-up" size={16} style={textStyle} />
                     )}
-                    TickIconComponent={({style}) => (
+                    TickIconComponent={({ style }) => (
                       <Entypo name="check" size={16} style={textStyle} />
                     )}
-                    scrollViewProps={{endFillColor: 'black'}}
+                    scrollViewProps={{ endFillColor: 'black' }}
                     loading={isLoading}
                     onSelectItem={value => switchId(value)}
                   />
@@ -668,7 +849,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                   textStyle,
                   styles.address,
                   semiTransparent,
-                  {borderRadius: 5, paddingHorizontal: 10, paddingBottom: 3},
+                  { borderRadius: 5, paddingHorizontal: 10, paddingBottom: 3 },
                 ]}>
                 +{user[defaultIndex]?.phn_no}
               </Text>
@@ -681,7 +862,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                   setValue={setSortValue}
                   setItems={setStationName}
                   style={styles.sort}
-                  textStyle={[textStyle, {textAlign: 'right', flex: 0}]}
+                  textStyle={[textStyle, { textAlign: 'right', flex: 0 }]}
                   listItemLabelStyle={textStyle}
                   placeholder={
                     user[defaultIndex]?.station.station_name ||
@@ -706,16 +887,16 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                     <Feather
                       name="edit"
                       size={18}
-                      style={[textStyle, {opacity: 0.8, elevation: 5}]}
+                      style={[textStyle, { opacity: 0.8, elevation: 5 }]}
                     />
                   )}
-                  ArrowUpIconComponent={({style}) => (
+                  ArrowUpIconComponent={({ style }) => (
                     <Entypo name="chevron-up" size={16} style={textStyle} />
                   )}
-                  TickIconComponent={({style}) => (
+                  TickIconComponent={({ style }) => (
                     <Entypo name="check" size={16} style={textStyle} />
                   )}
-                  scrollViewProps={{endFillColor: 'black'}}
+                  scrollViewProps={{ endFillColor: 'black' }}
                   loading={isLoading}
                 />
               </View>
@@ -729,9 +910,15 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.65, textAlign: 'right'}}
+                style={{ flex: 0.65, textAlign: 'right' }}
               />
-              <TouchableOpacity style={{flex: 1}} onPress={setUserD}>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => {
+                  getAnimation();
+                  setElavatedBg(true);
+                  setEditModule(true);
+                }}>
                 <Text style={[textStyle, styles.itemName]}>Edit profile</Text>
               </TouchableOpacity>
             </View>
@@ -742,9 +929,9 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.65, textAlign: 'right'}}
+                style={{ flex: 0.65, textAlign: 'right' }}
               />
-              <TouchableOpacity style={{flex: 1}} onPress={applyReg}>
+              <TouchableOpacity style={{ flex: 1 }} onPress={applyReg}>
                 <Text style={[textStyle, styles.itemName]}>Add Account</Text>
               </TouchableOpacity>
             </View>
@@ -755,10 +942,10 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.65, textAlign: 'right'}}
+                style={{ flex: 0.65, textAlign: 'right' }}
               />
               <TouchableOpacity
-                style={{flex: 1}}
+                style={{ flex: 1 }}
                 onPress={() => {
                   getAnimation();
                   setElavatedBg(true);
@@ -774,10 +961,10 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.65, textAlign: 'right'}}
+                style={{ flex: 0.65, textAlign: 'right' }}
               />
               <TouchableOpacity
-                style={{flex: 1}}
+                style={{ flex: 1 }}
                 onPress={() => {
                   getAnimation();
                   setElavatedBg(true);
@@ -793,7 +980,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                 color={
                   isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED
                 }
-                style={{flex: 0.65, textAlign: 'right'}}
+                style={{ flex: 0.65, textAlign: 'right' }}
               />
               <TouchableOpacity
                 onPress={() => {
@@ -804,7 +991,7 @@ function Profile({navigation}: NavigationScreenProp): JSX.Element {
                     onConfirm: signout,
                   });
                 }}
-                style={{flex: 1}}>
+                style={{ flex: 1 }}>
                 <Text style={[textStyle, styles.itemName]}>Sign Out</Text>
               </TouchableOpacity>
             </View>
@@ -839,13 +1026,21 @@ const styles = StyleSheet.create({
     gap: 25,
   },
   dp: {
+    position: 'relative',
     width: 130,
     aspectRatio: 0.9,
     borderRadius: 100,
-    backgroundColor: colors.DARK_HIGHLIGHTED,
+    backgroundColor: colors.DARK_LIGHT,
     elevation: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  img: {
+    width: '100%',
+    height: '100%',
+    opacity: 0.8,
+    zIndex: 1500,
   },
   name: {
     fontFamily: fonts.Bree,
@@ -899,7 +1094,7 @@ const styles = StyleSheet.create({
     height: 300,
     borderRadius: 150,
     opacity: 0.09,
-    transform: [{rotate: '130deg'}],
+    transform: [{ rotate: '130deg' }],
   },
   elavatedbg: {
     position: 'absolute',
@@ -918,27 +1113,35 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    height: 50,
+    minHeight: 50,
     borderWidth: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     width: '100%',
     borderRadius: 10,
     borderColor: colors.DARK_LIGHT,
     alignItems: 'center',
-    gap: 10,
+    gap: 5,
     zIndex: 1000,
+    overflow: 'scroll',
   },
   textInput: {
     fontFamily: fonts.Vollkorn,
+    fontSize: 14,
     alignItems: 'center',
-    fontSize: 20,
-    letterSpacing: 4,
     width: '100%',
   },
+
+  upload: {
+    position: 'absolute',
+    bottom: '5%',
+    alignSelf: 'center',
+    zIndex: 1500,
+  },
+
   label: {
     marginTop: 3,
     fontFamily: fonts.KarmaSemiBold,
-    fontSize: 16,
+    fontSize: 15,
   },
   sort: {
     borderWidth: 0,

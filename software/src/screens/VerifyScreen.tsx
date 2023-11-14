@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useContext, useState, useEffect, useCallback} from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import {
   BackHandler,
   Dimensions,
@@ -11,14 +11,14 @@ import {
   View,
 } from 'react-native';
 import CustomDigitKeyboard from '../components/CustomDigitKeyboard';
-import {colors} from '../style/colors';
-import {ThemeContext} from '../context/ThemeContext';
+import { colors } from '../style/colors';
+import { ThemeContext } from '../context/ThemeContext';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
-import {fonts} from '../style/fonts';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {MainStackParamList} from '../navigation/MainStack';
-import {compareSHA} from '../security/encryp';
-import {useUserInfo} from '../context/AuthContext';
+import { fonts } from '../style/fonts';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from '../navigation/MainStack';
+import { compareSHA } from '../security/encryp';
+import { useUserInfo } from '../context/AuthContext';
 import CustomAlert from '../components/CustomAlert';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Customloading from '../components/CustomLoading';
@@ -34,9 +34,9 @@ interface homeScreenProp {
 }
 
 let letters: string[] = [];
-function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
-  const {darkMode} = useContext(ThemeContext);
-  const {user} = useUserInfo();
+function VerifyScreen({ navigation }: homeScreenProp): JSX.Element {
+  const { darkMode } = useContext(ThemeContext);
+  const { user, refreshModule } = useUserInfo();
   const [alert, setAlert] = useState<string>();
   const [isLoading, setLoading] = useState(false);
   const [isBlocked, setBlock] = useState<boolean>(false);
@@ -60,7 +60,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   };
 
   const blockEm = async () => {
-    const {error} = await supabase.from('suspend').insert({
+    const { error } = await supabase.from('suspend').insert({
       user_index: user[defaultIndex]?.user_data[0].user_index,
       reason: 'wrong attempts',
     });
@@ -72,7 +72,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   };
 
   const getBlocked = useCallback(async () => {
-    const {data, error} = await supabase
+    const { data, error } = await supabase
       .from('suspend')
       .select('*')
       .eq('user_index', user[defaultIndex]?.user_data[0]?.user_index);
@@ -127,7 +127,8 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
   }, [defaultIndex, getBlocked, user]);
 
   useEffect(() => {
-    user[defaultIndex] ? setLoading(false) : setLoading(true);
+/*     console.log(user);  */
+    user[defaultIndex] ? setLoading(false) : (refreshModule() ,setLoading(true));
   }, [defaultIndex, user]);
 
   useEffect(() => {
@@ -169,7 +170,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
               <Text
                 style={[
                   textStyle,
-                  {fontFamily: fonts.KarmaBold, fontSize: 22},
+                  { fontFamily: fonts.KarmaBold, fontSize: 22 },
                 ]}>
                 You are blocked
               </Text>
@@ -222,7 +223,7 @@ function VerifyScreen({navigation}: homeScreenProp): JSX.Element {
         <View
           style={[
             styles.keypad,
-            {backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK},
+            { backgroundColor: isDarkMode ? colors.LIGHT : colors.DARK },
           ]}>
           <View style={styles.line} />
           <CustomDigitKeyboard

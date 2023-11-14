@@ -5,4 +5,6 @@ declare module '@env' {
   export const LOCALHOST: string;
   export const SECRET_KEY: string;
   export const HOST_SERVER: string;
+  export const UPLOAD_PRE: string;
+  export const CLOUD_NAME: string;
 }

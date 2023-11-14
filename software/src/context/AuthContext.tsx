@@ -27,8 +27,10 @@ interface userData {
   station: any;
   id: number;
   phn_no: string;
+  email: string;
   user_data: userSecureData[];
   default_index: number;
+  image_url: string;
 }
 
 interface AuthContextType {
@@ -65,7 +67,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       let {data, error} = await supabase
         .from('user')
         .select(
-          'id, name,address, station(id, distance, station_code, station_name), phn_no, default_index, user_data(user_index, balance, verify_pin)',
+          'id, name,address, email, image_url, station(id, distance, station_code, station_name), phn_no, default_index, user_data(user_index, balance, verify_pin)',
         )
         .order('id')
         .eq('phn_no', sessionPhn);
@@ -80,7 +82,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
       let {data, error} = await supabase
         .from('user')
         .select(
-          'id, name, address, station(id, distance, station_code, station_name), phn_no,default_index, user_data(user_index, balance, verify_pin)',
+          'id, name, address, email, image_url, station(id, distance, station_code, station_name), phn_no,default_index, user_data(user_index, balance, verify_pin)',
         )
         .order('id')
         .eq('email', sessionMail);
@@ -96,6 +98,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
   const checkAuth = async () => {
     try {
       const {data} = await supabase.auth.getSession();
+ /*      console.log(data?.session?.user.email); */
       data?.session?.user.phone
         ? setSessionPhn(data?.session?.user.phone)
         : setSessionMail(data?.session?.user.email);

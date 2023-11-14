@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Dimensions,
   SafeAreaView,
@@ -10,15 +10,15 @@ import {
   View,
   Linking,
 } from 'react-native';
-import {ThemeContext} from '../context/ThemeContext';
-import {colors} from '../style/colors';
-import {fonts} from '../style/fonts';
+import { ThemeContext } from '../context/ThemeContext';
+import { colors } from '../style/colors';
+import { fonts } from '../style/fonts';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import IonIcons from 'react-native-vector-icons/Ionicons';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {AuthStackParamList} from '../navigation/AuthStack';
-import {REG_URL} from '@env';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../navigation/AuthStack';
+import { REG_URL } from '@env';
 import OnboardingSvg from '../components/SvgComponents/OnboardingSvg';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
@@ -30,8 +30,8 @@ interface LoginScreenProps {
   navigation: LoginScreenNavigationProp;
 }
 
-const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
+const OnboardingScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { darkMode, toggleOffDarkMode } = useContext(ThemeContext);
   const [ipAddress, setIpAddress] = useState<string | null>(null);
   const isDarkMode = darkMode;
 
@@ -54,20 +54,6 @@ const OnboardingScreen: React.FC<LoginScreenProps> = ({navigation}) => {
       console.error('Error opening link: ', err),
     );
   };
-
-  const fetchIPAddress = async () => {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      setIpAddress(data.ip);
-    } catch (error) {
-      console.error('Error getting IP address:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchIPAddress();
-  }, []);
 
   const regUrl = REG_URL;
 
@@ -191,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
   },
-  btnPadding: {alignItems: 'center', paddingTop: 5},
+  btnPadding: { alignItems: 'center', paddingTop: 5 },
   arrow: {
     position: 'absolute',
     bottom: 20,
