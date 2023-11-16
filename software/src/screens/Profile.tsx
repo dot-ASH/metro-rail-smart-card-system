@@ -17,7 +17,6 @@ import {
   TouchableOpacity,
   UIManager,
   View,
-  Image,
 } from 'react-native';
 import { ThemeContext } from '../context/ThemeContext';
 import { colors } from '../style/colors';
@@ -27,7 +26,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import Customloading from '../components/CustomLoading';
 import CustomDialog from '../components/CustomDialog';
-import { sha256HashPin, encryptHash, decryptHash } from '../security/encryp';
+import { sha256HashPin} from '../security/encryp';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/MainStack';
 import Feather from 'react-native-vector-icons/Feather';
@@ -35,14 +34,9 @@ import { fonts } from '../style/fonts';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
-import GestureRecognizer from 'react-native-swipe-gestures';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import Draggable from 'react-native-draggable';
 import DropDownPicker from 'react-native-dropdown-picker';
-import ImagePicker, {
-  launchImageLibrary,
-  ImageLibraryOptions,
-} from 'react-native-image-picker';
 import { REG_URL } from '@env';
 
 if (
@@ -179,17 +173,6 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
     setIfLoading(false);
     setIfSuccess(false);
     setIfWrong(false);
-  };
-
-  const imageSelect = async () => {
-    const options: ImageLibraryOptions = {
-      mediaType: 'photo',
-      includeBase64: true,
-      maxHeight: 200,
-      maxWidth: 200,
-    };
-
-    const result = await launchImageLibrary(options);
   };
 
   const onChangePassHandler = (value: string, name: string) => {
@@ -775,25 +758,11 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
         <View style={styles.profileConatiner}>
           <View style={styles.profileDp}>
             <View style={styles.dp}>
-              {user[defaultIndex].image_url ? (
-                <Image
-                  source={{ uri: user[defaultIndex].image_url }}
-                  style={styles.img}
-                />
-              ) : (
                 <FontAwesome5Icon
                   name={defaultIndex === 0 ? 'user-astronaut' : 'user-graduate'}
                   size={84}
                   color={colors.DARK}
                 />
-              )}
-              <TouchableOpacity onPress={imageSelect} style={styles.upload}>
-                <FontAwesome6Icon
-                  name="upload"
-                  size={16}
-                  color={colors.LIGHT}
-                />
-              </TouchableOpacity>
             </View>
             <View style={styles.gap20}>
               <View>
@@ -832,10 +801,10 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                     ArrowDownIconComponent={() => (
                       <Entypo name="chevron-down" size={16} style={textStyle} />
                     )}
-                    ArrowUpIconComponent={({ style }) => (
+                    ArrowUpIconComponent={() => (
                       <Entypo name="chevron-up" size={16} style={textStyle} />
                     )}
-                    TickIconComponent={({ style }) => (
+                    TickIconComponent={() => (
                       <Entypo name="check" size={16} style={textStyle} />
                     )}
                     scrollViewProps={{ endFillColor: 'black' }}
