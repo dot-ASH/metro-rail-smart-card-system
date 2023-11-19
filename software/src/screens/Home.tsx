@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
-import React, {useContext, useEffect, useState, useRef} from 'react';
+import React, { useContext, useEffect, useState  } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -18,19 +18,16 @@ import {
   BackHandler,
 } from 'react-native';
 
-import {colors} from '../style/colors';
-import supabase from '../data/supaBaseClient';
-import {useUserInfo} from '../context/AuthContext';
+import { colors } from '../style/colors';
+import { useUserInfo } from '../context/AuthContext';
 import IonIcon from 'react-native-vector-icons/Ionicons';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import '../../assets/fonts/Source Code Pro SemiBold.ttf';
-import {ThemeContext} from '../context/ThemeContext';
-import {fonts} from '../style/fonts';
-import CustomModal from '../components/modules/CustomModal';
-import {decryptHash, encryptHash} from '../security/encryp';
+import { ThemeContext } from '../context/ThemeContext';
+import { fonts } from '../style/fonts';
+import { decrypt } from '../security/encryp';
 import Entypo from 'react-native-vector-icons/Entypo';
-import Payment from '../components/Payment';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -38,9 +35,9 @@ if (Platform.OS === 'android') {
   }
 }
 
-function Home({navigation}: any): JSX.Element {
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
-  const {user, setUsers} = useUserInfo();
+function Home({ navigation }: any): JSX.Element {
+  const { darkMode, toggleOffDarkMode } = useContext(ThemeContext);
+  const { user} = useUserInfo();
   const [boxPosition, setBoxPosition] = useState('left');
   const [isHidden, setHidden] = useState(true);
   const [moduleVisible, setModuleVisible] = useState(false);
@@ -80,9 +77,9 @@ function Home({navigation}: any): JSX.Element {
     setBoxPosition(boxPosition === 'left' ? 'right' : 'left');
   };
 
-  const modalNav = (e: any) => {
+  const modalNav = (e: any, screenName: string) => {
     e.preventDefault();
-    navigation.navigate('ModuleStack');
+    navigation.navigate(screenName);
   };
 
   const modules = [
@@ -96,7 +93,7 @@ function Home({navigation}: any): JSX.Element {
           color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
         />
       ),
-      onModulePress: (event: any) => modalNav(event),
+      onModulePress: (event: any) => modalNav(event, "FareChart"),
       color: null,
     },
     {
@@ -109,7 +106,7 @@ function Home({navigation}: any): JSX.Element {
           color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
         />
       ),
-      onModulePress: (event: any) => modalNav(event),
+      onModulePress: (event: any) => modalNav(event, "HowTos"),
     },
     {
       title: 'Terms and Conditions',
@@ -121,10 +118,7 @@ function Home({navigation}: any): JSX.Element {
           color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
         />
       ),
-      onModulePress: () => {
-        setShowPayment(true);
-        setElavatedBg(true);
-      },
+      onModulePress: (event: any) => modalNav(event, "Terms"),
     },
   ];
 
@@ -134,10 +128,10 @@ function Home({navigation}: any): JSX.Element {
 
     isHidden
       ? (newString =
-          '******' +
-          user_index?.charAt(user_index.length - 3) +
-          user_index?.charAt(user_index.length - 2) +
-          user_index?.charAt(user_index.length - 1))
+        '********' +
+        user_index?.charAt(user_index.length - 3) +
+        user_index?.charAt(user_index.length - 2) +
+        user_index?.charAt(user_index.length - 1))
       : (newString = user_index);
 
     for (let i = 0; i < newString?.length; i++) {
@@ -149,12 +143,12 @@ function Home({navigation}: any): JSX.Element {
     return fancyString;
   };
 
-  const decryptBalance = async () => {
+  const decryptBalance = () => {
     if (typeof user[defaultIndex]?.user_data[0].balance !== 'undefined') {
-      const newBalance = await decryptHash(
+      const newBalance = decrypt(
         user[defaultIndex]?.user_data[0].balance,
       );
-      setBalance(newBalance);
+      setBalance(newBalance.toString());
     }
   };
 
@@ -207,7 +201,7 @@ function Home({navigation}: any): JSX.Element {
                 isDarkMode ? colors.DARK_HIGHLIGHTED : colors.LIGHT_HIGHLIGHTED
               }
             />
-            <View style={{flexDirection: 'column'}}>
+            <View style={{ flexDirection: 'column' }}>
               <Text style={[styles.balanceLabel, textStyle]}>Balance</Text>
               <Text style={[textStyle, styles.balance]}>
                 {isHidden ? '****' : balance}
@@ -273,7 +267,7 @@ function Home({navigation}: any): JSX.Element {
                     marginLeft: 5,
                   }}
                 />
-                <View style={[{marginRight: 5, opacity: isHidden ? 0.3 : 0.8}]}>
+                <View style={[{ marginRight: 5, opacity: isHidden ? 0.3 : 0.8 }]}>
                   <IonIcon
                     name="eye"
                     size={26}
@@ -284,16 +278,16 @@ function Home({navigation}: any): JSX.Element {
                   />
                 </View>
               </View>
-              <View style={{justifyContent: 'center', gap: 10}}>
+              <View style={{ justifyContent: 'center', gap: 10 }}>
                 <Text
                   style={[
-                    {fontSize: 40, fontFamily: fonts.Quantico},
+                    { fontSize: 34, fontFamily: fonts.Quantico },
                     textStyleAlt,
                   ]}>
                   {user[defaultIndex]
                     ? fancify(
-                        user[defaultIndex]?.user_data[0].user_index.toString(),
-                      )
+                      user[defaultIndex]?.user_data[0].user_index.toString(),
+                    )
                     : null}
                 </Text>
                 <Text

@@ -1,5 +1,5 @@
 # OSX
-
+test.js
 /.obsidian/
 
 # Software
@@ -79,7 +79,6 @@
 /software/.bundle/
 /software/__tests__/
 /software/assets/
-/software/src/security/*
 
 # Hardware
 /hardware/wifi/.pio/

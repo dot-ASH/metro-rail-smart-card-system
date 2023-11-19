@@ -18,10 +18,9 @@ import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import {TextInput} from 'react-native';
 import {Platform} from 'react-native';
 import {ThemeContext} from '../context/ThemeContext';
-import {decryptHash} from '../security/encryp';
+import {decrypt} from '../security/encryp';
 import {useUserInfo} from '../context/AuthContext';
 import axios from 'axios';
-import {LOCALHOST} from '@env';
 import {HOST_SERVER} from '@env';
 import Draggable from 'react-native-draggable';
 
@@ -41,7 +40,7 @@ const SCREEN_HEIGHT = Dimensions.get('screen').height;
 
 const Payment = ({onCancle}: paymentProps) => {
   const {darkMode} = useContext(ThemeContext);
-  const {user, setUsers} = useUserInfo();
+  const {user} = useUserInfo();
   const [ifLoading, setIfLoading] = useState(false);
   const [amountForm, setamountForm] = useState({
     newAmount: '',
@@ -127,8 +126,11 @@ const Payment = ({onCancle}: paymentProps) => {
   };
 
   const decryptBalance = async (input: string) => {
+    if(!input){
+      setBalance("0");
+    }
     if (typeof input !== 'undefined') {
-      setBalance(await decryptHash(input));
+      setBalance(decrypt(input).toString());
     }
   };
 
