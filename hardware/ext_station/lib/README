@@ -1,0 +1,20 @@
+`CONNECTIONS`
+
+```
+# RFID -> ESP8266
+SDA -> D4 
+SCK -> D5
+MOSI -> D7
+MISO -> D6
+IRQ ->
+GRD -> G
+RSI -> D3
+3.3V -> 3V
+```
+
+```
+# SERVO -> ESP8266
+INPUT -> D1 
+GND -> G
+3.3-5V -> VIN
+```

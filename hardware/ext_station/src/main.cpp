@@ -1,4 +1,4 @@
-// ENTRY_UN
+// EXIT_M11
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Data.h>
@@ -14,7 +14,7 @@
 
 #define LED_BUILTIN 2
 #define SERVO_PIN D1
-#define STATION_CODE "UN"
+#define STATION_CODE "M11"
 
 constexpr uint8_t RST_PIN = D3;
 constexpr uint8_t SS_PIN = D4;
@@ -89,34 +89,75 @@ String generateRandomWord() {
   return randomWord;
 }
 
-int dataSend(String user_id, String transId) {
-  String payload = "";
-  Serial.println(user_id);
-  long long userId = atoll(user_id.c_str());
-  Serial.println(userId);
-  StaticJsonDocument<1024> doc;
-  doc["transId"] = transId;
-  doc["user_index"] = userId;
-  doc["station_code_to"] = STATION_CODE;
-
-  serializeJson(doc, payload);
-  bool upsert = false;
-  String table = "transaction";
-  int status_code = db.insert(table, payload, upsert);
-  db.urlQuery_reset();
-  return status_code;
-}
-
 String readBalance(String id) {
   String read =
       db.from("user_data").select("balance").eq("user_index", id).doSelect();
   String jsonString = read;
-  DynamicJsonDocument doc(200);
+  DynamicJsonDocument doc(400);
   deserializeJson(doc, read);
   JsonObject obj = doc[0];
   String balance = obj["balance"];
   db.urlQuery_reset();
   return balance;
+}
+
+String readFromWhere(String id) {
+  String read = db.from("transaction")
+                    .select("*")
+                    .eq("user_index", id)
+                    .eq("type", "ongoing")
+                    .doSelect();
+  DynamicJsonDocument doc(400);
+  deserializeJson(doc, read);
+  JsonObject obj = doc[0];
+  String fromWhere = obj["station_code_where"];
+  db.urlQuery_reset();
+  return fromWhere;
+}
+
+int readStationValue(String staionCode) {
+  String read =
+      db.from("station").select("*").eq("station_code", staionCode).doSelect();
+  DynamicJsonDocument doc(400);
+  deserializeJson(doc, read);
+  JsonObject obj = doc[0];
+  int value = obj["distance"];
+  db.urlQuery_reset();
+  return value;
+}
+
+int dataSend(int cost, String user_id) {
+  String payload = "";
+  long long userId = atoll(user_id.c_str());
+  StaticJsonDocument<1024> doc;
+  doc["amount"] = cost;
+  doc["status"] = true;
+  doc["type"] = "spnt";
+  doc["station_code_to"] = STATION_CODE;
+
+  serializeJson(doc, payload);
+  String table = "transaction";
+  int status_code = db.update(table)
+                        .eq("user_index", String(userId))
+                        .eq("type", "ongoing")
+                        .doUpdate(payload);
+  db.urlQuery_reset();
+  return status_code;
+}
+
+int writeBalance(int balance, String user_id) {
+  String encBalance = encrypt(balance, shift);
+  String payload = "";
+  long long userId = atoll(user_id.c_str());
+  StaticJsonDocument<1024> doc;
+  doc["balance"] = encBalance;
+
+  serializeJson(doc, payload);
+  String table = "user_data";
+  int status_code =
+      db.update(table).eq("user_index", String(userId)).doUpdate(payload);
+  db.urlQuery_reset();
+  return status_code;
 }
 
 int checkOnGoing(String id) {
@@ -125,7 +166,7 @@ int checkOnGoing(String id) {
                     .eq("user_index", id)
                     .eq("type", "ongoing")
                     .doSelect();
-  DynamicJsonDocument doc(200);
+  DynamicJsonDocument doc(400);
   deserializeJson(doc, read);
   size_t jsonObjectLength = doc.size();
   return jsonObjectLength;
@@ -138,6 +179,40 @@ void openGate() {
   for (pos = 180; pos >= 0; pos -= 5) {
     myservo.write(pos);
   }
+}
+
+int calculateTrip(String id) {
+  String stationFrom = readFromWhere(id);
+  int staionFromValue = readStationValue(stationFrom);
+  int stationToValue = readStationValue(STATION_CODE);
+  int distance = abs(staionFromValue - stationToValue);
+  if (distance < 4) {
+    return 20;
+  } else if (distance < 7) {
+    return 30;
+  } else if (distance < 9) {
+    return 40;
+  } else if (distance < 11) {
+    return 50;
+  } else if (distance < 13) {
+    return 60;
+  } else if (distance < 14) {
+    return 70;
+  } else if (distance < 16) {
+    return 80;
+  } else if (distance < 19) {
+    return 90;
+  } else {
+    return 100;
+  }
+}
+
+int checkBlck(String id) {
+  String read = db.from("suspend").select("*").eq("user_index", id).doSelect();
+  DynamicJsonDocument doc(400);
+  deserializeJson(doc, read);
+  size_t jsonObjectLength = doc.size();
+  return jsonObjectLength;
 }
 
 void setup() {
@@ -165,8 +240,9 @@ void setup() {
 }
 
 void loop() {
-  if (!rfid.PICC_IsNewCardPresent())
+  if (!rfid.PICC_IsNewCardPresent()) {
     return;
+  }
   if (rfid.PICC_ReadCardSerial()) {
     Serial.println("Scanned");
     for (byte i = 0; i < 4; i++) {
@@ -174,19 +250,15 @@ void loop() {
     }
     String text = readBalance(tag);
     int balance = decrypt(text, shift);
-    if (balance > 100) {
-      if (checkOnGoing(tag) > 0) {
-        Serial.println("You have an unpaid trip");
-      } else {
-        openGate();
-        String randWord = generateRandomWord();
-        int result = dataSend(tag, randWord);
-        if (result == 201) {
-          Serial.println("You are granted");
-        }
-      }
+    if (checkBlck(tag) < 1) {
+      openGate();
+      int cost = calculateTrip(tag);
+      int remaining = balance - cost;
+      dataSend(cost, tag);
+      writeBalance(remaining, tag);
     } else {
-      Serial.println("You don't have any money");
+      Serial.println("You are blocked");
+      // BUZZER AND RED LIGHT
     }
     tag = "";
     rfid.PICC_HaltA();
