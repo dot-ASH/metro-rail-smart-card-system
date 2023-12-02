@@ -324,7 +324,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
       const { error } = await supabase
         .from('user_data')
         .update({ verify_pin: hashedpPIN })
-        .eq('id', user[defaultIndex]?.id);
+        .eq('phn_no', user[defaultIndex]?.phn_no);
       if (error) {
         setIfLoading(false);
         setAlertText('Somethings wrong! try again');

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
-import React, { useContext, useEffect, useState  } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -28,6 +28,8 @@ import { ThemeContext } from '../context/ThemeContext';
 import { fonts } from '../style/fonts';
 import { decrypt } from '../security/encryp';
 import Entypo from 'react-native-vector-icons/Entypo';
+import supabase from '../data/supaBaseClient';
+import CustomDialog from '../components/CustomDialog';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -37,13 +39,15 @@ if (Platform.OS === 'android') {
 
 function Home({ navigation }: any): JSX.Element {
   const { darkMode, toggleOffDarkMode } = useContext(ThemeContext);
-  const { user} = useUserInfo();
+  const { user, refreshModule } = useUserInfo();
   const [boxPosition, setBoxPosition] = useState('left');
   const [isHidden, setHidden] = useState(true);
   const [moduleVisible, setModuleVisible] = useState(false);
   const [balance, setBalance] = useState('');
   const [showPayment, setShowPayment] = useState(false);
   const [elavatedBg, setElavatedBg] = useState(false);
+  const [ongoingTrip, setOngoing] = useState(false);
+  const [showDialoue, setShowDialoue] = useState(false);
 
   const isDarkMode = darkMode;
   const defaultIndex = user[0].default_index;
@@ -67,6 +71,63 @@ function Home({ navigation }: any): JSX.Element {
       ? 'rgba(241, 234, 228, 0.1)'
       : 'rgba(50, 46, 47, 0.2)',
   };
+
+  const checkInsertSubcription = async () => {
+    try {
+      supabase.channel('custom-insert-channel')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'transaction', filter: `user_index=eq.${user[defaultIndex]?.user_data[0].user_index}` },
+          (payload) => {
+            console.log('insert received!', payload.new.type);
+            if (payload.new.type == 'ongoing') {
+              setOngoing(true);
+            }
+          }
+        )
+        .subscribe()
+    } catch (error) {
+      console.error('Error fetching sub data:', error);
+    }
+  };
+
+  const checkUpdateSubcription = async () => {
+    try {
+      supabase.channel('custom-filter-channel')
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'transaction', filter: `user_index=eq.${user[defaultIndex]?.user_data[0].user_index}` },
+          (payload) => {
+            console.log('update received!', payload.new.type);
+            if (payload.new.type == 'spnt') {
+              setOngoing(false);
+            }
+          }
+        )
+        .subscribe()
+    } catch (error) {
+      console.error('Error fetching sub data:', error);
+    }
+  };
+
+
+  const checkOnGoing = async () => {
+    const { data } = await supabase.from("transaction").select("*").eq('user_index', user[defaultIndex]?.user_data[0].user_index).eq('type', 'ongoing');
+    if (data && data?.length > 0) {
+      setOngoing(true);
+    } else {
+      setOngoing(false);
+    }
+  }
+
+  useEffect(() => {
+    checkInsertSubcription();
+    checkUpdateSubcription();
+  })
+
+  useEffect(() => {
+    checkOnGoing();
+  }, [])
 
   const switchMode = () => {
     toggleOffDarkMode();
@@ -166,6 +227,20 @@ function Home({ navigation }: any): JSX.Element {
     };
   }, []);
 
+    const blockEm = async () => {
+    const { error } = await supabase.from('suspend').insert({
+      user_index: user[defaultIndex]?.user_data[0].user_index,
+      reason: 'stolen card',
+    });
+    if (error) {
+      console.log('blockEm', error.message);
+      return;
+    }
+    refreshModule();
+    setShowDialoue(false);
+    setElavatedBg(false);
+  };
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -173,6 +248,10 @@ function Home({ navigation }: any): JSX.Element {
         backgroundColor={colors.TRANPARENT}
         translucent={true}
       />
+      {elavatedBg ? <View style={styles.elavatedbg} /> : null}
+      <CustomDialog isVisible={showDialoue} title={"Alert!!"} onConfirm={blockEm}
+        text={"Do you want to block this card?"}
+        onCancle={() => (setShowDialoue(false), setElavatedBg(false))} />
 
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
@@ -305,7 +384,29 @@ function Home({ navigation }: any): JSX.Element {
             </View>
           </View>
           {/* MODULES */}
-          <View style={styles.moduleContainer}>
+          <View style={[styles.moduleContainer]}>
+            {ongoingTrip ? <View style={[styles.modules, , {
+              backgroundColor: isDarkMode
+                ? 'rgba(241, 234, 228, 0.09)'
+                : 'rgba(50, 46, 47, 0.09)',
+            }]}>
+              <Entypo
+                name="500px-with-circle"
+                size={32}
+                color={colors.WARNING}
+              />
+
+              <TouchableOpacity
+                onPress={() => (setShowDialoue(true), setElavatedBg(true))}>
+                <Text style={[styles.moduleTitle, { color: isDarkMode ? colors.ERROR : '#c03d28' }]}>
+                  Onging Trip
+                </Text>
+                <Text style={[styles.moduleText, { color: colors.WARNING }]}>
+                  Not you? Block it now!
+                </Text>
+              </TouchableOpacity>
+            </View> : null}
+
             {modules.map((item, key) => {
               return (
                 <View style={[styles.modules]} key={key}>

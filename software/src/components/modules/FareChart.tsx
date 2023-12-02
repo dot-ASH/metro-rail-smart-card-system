@@ -22,7 +22,6 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import supabase from '../../data/supaBaseClient';
 import Customloading from '../CustomLoading';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
-import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 
 interface StationDataProps {
   station_name: string;
@@ -44,7 +43,7 @@ interface StationDataItemProps {
 const {height: SCREEN_HEIGHT} = Dimensions.get('window');
 const FareChart = () => {
   const navigaton = useNavigation();
-  const {user, refresh} = useUserInfo();
+  const {user } = useUserInfo();
   const {darkMode} = useContext(ThemeContext);
   const isDarkMode = darkMode;
   const defaultIndex = user[0].default_index;
