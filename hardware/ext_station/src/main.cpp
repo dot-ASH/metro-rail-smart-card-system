@@ -188,7 +188,7 @@ int calculateTrip(String id) {
   int distance = abs(staionFromValue - stationToValue);
   if (distance < 4) {
     return 20;
-  } else if (distance < 7) {
+  } else if (distance < 6.5) {
     return 30;
   } else if (distance < 9) {
     return 40;

@@ -10,7 +10,6 @@ import {
   View,
   Dimensions,
   TouchableOpacity,
-  Button,
   Platform,
   UIManager,
   LayoutAnimation,
@@ -30,6 +29,8 @@ import { decrypt } from '../security/encryp';
 import Entypo from 'react-native-vector-icons/Entypo';
 import supabase from '../data/supaBaseClient';
 import CustomDialog from '../components/CustomDialog';
+import PushNotification from "react-native-push-notification";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 if (Platform.OS === 'android') {
   if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -48,6 +49,7 @@ function Home({ navigation }: any): JSX.Element {
   const [elavatedBg, setElavatedBg] = useState(false);
   const [ongoingTrip, setOngoing] = useState(false);
   const [showDialoue, setShowDialoue] = useState(false);
+  const [pushNoti, setPushNoti] = useState(false);
 
   const isDarkMode = darkMode;
   const defaultIndex = user[0].default_index;
@@ -55,21 +57,12 @@ function Home({ navigation }: any): JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
   };
-  const backgroundStyleAlt = {
-    backgroundColor: !isDarkMode ? colors.DARK : colors.LIGHT,
-  };
   const textStyle = {
     color: isDarkMode ? colors.LIGHT_ALT : colors.DARK,
   };
 
   const textStyleAlt = {
     color: !isDarkMode ? colors.LIGHT_ALT : colors.DARK,
-  };
-
-  const semiTransparent = {
-    backgroundColor: isDarkMode
-      ? 'rgba(241, 234, 228, 0.1)'
-      : 'rgba(50, 46, 47, 0.2)',
   };
 
   const checkInsertSubcription = async () => {
@@ -82,6 +75,7 @@ function Home({ navigation }: any): JSX.Element {
             console.log('insert received!', payload.new.type);
             if (payload.new.type == 'ongoing') {
               setOngoing(true);
+               sendNotification(user[defaultIndex].name);
             }
           }
         )
@@ -98,9 +92,10 @@ function Home({ navigation }: any): JSX.Element {
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'transaction', filter: `user_index=eq.${user[defaultIndex]?.user_data[0].user_index}` },
           (payload) => {
-            console.log('update received!', payload.new.type);
+            console.log('update received!', payload);
             if (payload.new.type == 'spnt') {
               setOngoing(false);
+              clearNotification();
             }
           }
         )
@@ -110,7 +105,6 @@ function Home({ navigation }: any): JSX.Element {
     }
   };
 
-
   const checkOnGoing = async () => {
     const { data } = await supabase.from("transaction").select("*").eq('user_index', user[defaultIndex]?.user_data[0].user_index).eq('type', 'ongoing');
     if (data && data?.length > 0) {
@@ -119,15 +113,6 @@ function Home({ navigation }: any): JSX.Element {
       setOngoing(false);
     }
   }
-
-  useEffect(() => {
-    checkInsertSubcription();
-    checkUpdateSubcription();
-  })
-
-  useEffect(() => {
-    checkOnGoing();
-  }, [])
 
   const switchMode = () => {
     toggleOffDarkMode();
@@ -142,6 +127,35 @@ function Home({ navigation }: any): JSX.Element {
     e.preventDefault();
     navigation.navigate(screenName);
   };
+
+  const getStorageValue = async () => {
+    try {
+      const value = await AsyncStorage.getItem('pushNotiValue');
+      if (value !== null) {
+        value === 'true' ? setPushNoti(true) : setPushNoti(false);
+      }
+    } catch (error: any) {
+      console.log('getStorage:', error);
+    }
+  };
+
+  const sendNotification = (name: string) => {
+    if (pushNoti) {
+      PushNotification.localNotification({
+        channelId: '123',
+        id: '123',
+        message: "You have an ongoin trip",
+        title: name,
+        soundName: 'my_sound.mp3',
+      });
+    }
+  }
+
+  const clearNotification = () => {
+    if (pushNoti) {
+      PushNotification.cancelLocalNotification('123');
+    }
+  }
 
   const modules = [
     {
@@ -167,11 +181,12 @@ function Home({ navigation }: any): JSX.Element {
           color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
         />
       ),
-      onModulePress: (event: any) => modalNav(event, "HowTos"),
+      /*    onModulePress: (event: any) => modalNav(event, "HowTos"),  */
+      onModulePress: () => sendNotification("Metro Rider"),
     },
     {
-      title: 'Terms and Conditions',
       text: 'Rules and convention to follow!',
+      title: 'Terms and Conditions',
       icon: (
         <FontAwesome5Icon
           name="exclamation-circle"
@@ -213,21 +228,7 @@ function Home({ navigation }: any): JSX.Element {
     }
   };
 
-  useEffect(() => {
-    decryptBalance();
-  });
-
-  useEffect(() => {
-    const handleBackButton = () => {
-      return true;
-    };
-    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
-    return () => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
-    };
-  }, []);
-
-    const blockEm = async () => {
+  const blockEm = async () => {
     const { error } = await supabase.from('suspend').insert({
       user_index: user[defaultIndex]?.user_data[0].user_index,
       reason: 'stolen card',
@@ -240,6 +241,30 @@ function Home({ navigation }: any): JSX.Element {
     setShowDialoue(false);
     setElavatedBg(false);
   };
+
+  useEffect(() => {
+    checkInsertSubcription();
+    checkUpdateSubcription();
+  })
+
+  useEffect(() => {
+    checkOnGoing();
+  }, [])
+
+  useEffect(() => {
+    decryptBalance();
+    getStorageValue();
+  });
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      return true;
+    };
+    BackHandler.addEventListener('hardwareBackPress', handleBackButton);
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackButton);
+    };
+  }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>

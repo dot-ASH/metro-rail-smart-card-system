@@ -8,20 +8,20 @@ import {
   UIManager,
   Linking,
 } from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
-import {colors} from '../style/colors';
-import {fonts} from '../style/fonts';
+import React, { useContext, useEffect, useState } from 'react';
+import { colors } from '../style/colors';
+import { fonts } from '../style/fonts';
 import Customloading from './CustomLoading';
-import {TouchableOpacity} from 'react-native';
-import {LayoutAnimation} from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
-import {TextInput} from 'react-native';
-import {Platform} from 'react-native';
-import {ThemeContext} from '../context/ThemeContext';
-import {decrypt} from '../security/encryp';
-import {useUserInfo} from '../context/AuthContext';
+
+import { TextInput } from 'react-native';
+import { Platform } from 'react-native';
+import { ThemeContext } from '../context/ThemeContext';
+import { decrypt } from '../security/encryp';
+import { useUserInfo } from '../context/AuthContext';
 import axios from 'axios';
-import {HOST_SERVER} from '@env';
+import { HOST_SERVER } from '@env';
 import Draggable from 'react-native-draggable';
 
 if (
@@ -38,9 +38,9 @@ type paymentProps = {
 const SCREEN_WIDTH = Dimensions.get('screen').width;
 const SCREEN_HEIGHT = Dimensions.get('screen').height;
 
-const Payment = ({onCancle}: paymentProps) => {
-  const {darkMode} = useContext(ThemeContext);
-  const {user} = useUserInfo();
+const Payment = ({ onCancle }: paymentProps) => {
+  const { darkMode } = useContext(ThemeContext);
+  const { user } = useUserInfo();
   const [ifLoading, setIfLoading] = useState(false);
   const [amountForm, setamountForm] = useState({
     newAmount: '',
@@ -79,13 +79,6 @@ const Payment = ({onCancle}: paymentProps) => {
     );
   };
 
-  const getAnimation = () => {
-    LayoutAnimation.configureNext({
-      duration: 250,
-      create: {type: 'easeIn', property: 'opacity'},
-    });
-  };
-
   const onChangeAmountHandler = (value: string, name: string) => {
     setamountForm((form: any) => ({
       ...form,
@@ -97,7 +90,6 @@ const Payment = ({onCancle}: paymentProps) => {
     setIfLoading(true);
     const url = `${HOST_SERVER}/payment-request`;
     let amountToRchrg = parseInt(amountForm.newAmount, 10);
-
     var myHeaders = {
       'Content-Type': 'application/json',
     };
@@ -109,7 +101,7 @@ const Payment = ({onCancle}: paymentProps) => {
       data: {
         curr_bal: currentBalance,
         amount: amountToRchrg,
-        user_index: user[0].user_data[0].user_index,
+        user_index: user[defaultIndex].user_data[0].user_index,
       },
     };
     axios
@@ -120,13 +112,14 @@ const Payment = ({onCancle}: paymentProps) => {
           console.log(response.data.url);
           openLink(response.data.url);
         }
-        setamountForm({newAmount: ''});
+        setamountForm({ newAmount: '' });
+        onCancle();
       })
       .catch(error => console.log('error', error));
   };
 
   const decryptBalance = async (input: string) => {
-    if(!input){
+    if (!input) {
       setBalance("0");
     }
     if (typeof input !== 'undefined') {
@@ -159,7 +152,7 @@ const Payment = ({onCancle}: paymentProps) => {
         <Draggable
           x={SCREEN_WIDTH / 2 - (SCREEN_WIDTH - 20) / 2}
           y={SCREEN_HEIGHT / 4}
-          touchableOpacityProps={{activeOpacity: 1}}>
+          touchableOpacityProps={{ activeOpacity: 1 }}>
           <View
             style={[
               backgroundStyle,
@@ -204,7 +197,7 @@ const Payment = ({onCancle}: paymentProps) => {
                 ]}>
                 Recharge your card
               </Text>
-              <TouchableOpacity onPress={onCancle} style={{paddingLeft: 40}}>
+              <TouchableOpacity onPress={onCancle} style={{ padding: 10, marginLeft: -10, paddingLeft: 40 }}>
                 <FontAwesome6Icon size={20} name="xmark" style={[textStyle]} />
               </TouchableOpacity>
             </View>
@@ -239,8 +232,8 @@ const Payment = ({onCancle}: paymentProps) => {
                         balanceStatus === 'low' || balanceStatus === 'no'
                           ? colors.ERROR
                           : balanceStatus === 'sufficient'
-                          ? colors.WARNING
-                          : colors.VERIFIED,
+                            ? colors.WARNING
+                            : colors.VERIFIED,
                     },
                   ]}>
                   {balanceStatus}
@@ -251,16 +244,16 @@ const Payment = ({onCancle}: paymentProps) => {
                     style={[
                       textStyle,
                       styles.label,
-                      {color: colors.ERROR, fontFamily: fonts.KarmaBold},
+                      { color: colors.ERROR, fontFamily: fonts.KarmaBold },
                     ]}>
                     recharge immediately.
                   </Text>
                 ) : null}
-                <Text style={[textStyle, styles.label, {opacity: 0.6}]}>
+                <Text style={[textStyle, styles.label, { opacity: 0.6 }]}>
                   you can recharge here.
                 </Text>
               </View>
-              <View style={[styles.inputContainer, {width: '80%'}]}>
+              <View style={[styles.inputContainer, { width: '80%' }]}>
                 <Text style={[textStyle, styles.label]}>Amount:</Text>
                 <TextInput
                   style={[textStyle, styles.textInput]}

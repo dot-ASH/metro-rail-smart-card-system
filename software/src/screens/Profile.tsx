@@ -8,10 +8,8 @@ import {
   Linking,
   Platform,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -26,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomAlert from '../components/CustomAlert';
 import Customloading from '../components/CustomLoading';
 import CustomDialog from '../components/CustomDialog';
-import { sha256HashPin} from '../security/encryp';
+import { sha256HashPin } from '../security/encryp';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/MainStack';
 import Feather from 'react-native-vector-icons/Feather';
@@ -38,6 +36,7 @@ import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import Draggable from 'react-native-draggable';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { REG_URL } from '@env';
+import { Switch } from 'react-native-switch';
 
 if (
   Platform.OS === 'android' &&
@@ -85,7 +84,6 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
   const [psModule, setPassModule] = useState(false);
   const [editModule, setEditModule] = useState(false);
   const [settingModule, setSettingModule] = useState(false);
-  const [defaultDark, setDefaultDark] = useState(false);
   const [pushNoti, setPushNoti] = useState(false);
   const [stationData, setStationData] = useState<StationDataProps[]>();
   const [stationName, setStationName] = useState<DropDownProps[]>([]);
@@ -192,6 +190,8 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
   useEffect(() => {
     getStorageValue();
   }, []);
+
+  /*   console.log(pushNoti); */
 
   const getStation = useCallback(async () => {
     const { data, error } = await supabase
@@ -348,19 +348,8 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
     }
   };
 
-  const handleDeafultDark = () => {
-    setDefaultDark(prev => !prev);
-    // if (defaultDark) {
-    //   setDefaultDark(false);
-    //   setStorageValue('defaultDarkValue', 'false');
-    // } else {
-    //   setDefaultDark(true);
-    //   setStorageValue('defaultDarkValue', 'true');
-    // }
-  };
-
   const handlePushNoti = () => {
-    if (defaultDark) {
+    if (pushNoti) {
       setPushNoti(false);
       setStorageValue('pushNotiValue', 'false');
     } else {
@@ -387,7 +376,6 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
         onConfirm={dialogInfo.onConfirm}
       />
       <CustomAlert isVisible={alert.length > 0} text={alert} />
-
       {/* CHANGE PIN */}
       {psModule ? (
         <View style={styles.gestureStyle}>
@@ -437,7 +425,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                     setPassModule(false);
                     setElavatedBg(false);
                   }}
-                  style={{ alignSelf: 'flex-end' }}>
+                  style={{ padding: 10, alignSelf: 'flex-end' }}>
                   <FontAwesome6Icon
                     size={20}
                     name="xmark"
@@ -478,7 +466,12 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                 <View style={[styles.inputContainer, { width: '80%' }]}>
                   <Text style={[textStyle, styles.label]}>Confirm PIN: </Text>
                   <TextInput
-                    style={[textStyle, styles.textInput]}
+                    style={[
+                      textStyle,
+                      styles.textInput,
+                      { fontSize: 20, letterSpacing: 4 },
+                    ]}
+
                     value={passForm.confirmPass}
                     onChangeText={value =>
                       onChangePassHandler(value, 'confirmPass')
@@ -554,7 +547,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                     setEditModule(false);
                     setElavatedBg(false);
                   }}
-                  style={{ alignSelf: 'flex-end' }}>
+                  style={{ padding: 10, alignSelf: 'flex-end' }}>
                   <FontAwesome6Icon
                     size={20}
                     name="xmark"
@@ -581,6 +574,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                       onChangeEditHandler(value, 'newName')
                     }
                     placeholder={user[defaultIndex].name}
+                    placeholderTextColor={isDarkMode ? colors.LIGHT_ALT : colors.DARK}
                   />
                 </View>
 
@@ -593,6 +587,8 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                       onChangeEditHandler(value, 'newEmail')
                     }
                     placeholder={user[defaultIndex].email}
+                    placeholderTextColor={isDarkMode ? colors.LIGHT_ALT : colors.DARK}
+
                   />
                 </View>
                 <TouchableOpacity
@@ -662,7 +658,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                     setSettingModule(false);
                     setElavatedBg(false);
                   }}
-                  style={{ alignSelf: 'flex-end' }}>
+                  style={{ padding: 10, alignSelf: 'flex-end' }}>
                   <FontAwesome6Icon size={20} name="xmark" style={textStyle} />
                 </TouchableOpacity>
               </View>
@@ -675,41 +671,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                   width: '100%',
                   gap: 10,
                 }}>
-                <View
-                  style={[
-                    styles.inputContainer,
-                    {
-                      borderWidth: 0,
-                      width: '90%',
-                      justifyContent: 'space-between',
-                    },
-                  ]}>
-                  <Text style={[textStyle, styles.label]}>
-                    Default (dark mode)
-                  </Text>
-                  <Switch
-                    trackColor={{
-                      false: isDarkMode
-                        ? 'rgba(255, 255, 255, 0.2)'
-                        : 'rgba(0, 0, 0, 0.2)',
-                      true: isDarkMode
-                        ? 'rgba(255, 255, 255, 0.2)'
-                        : 'rgba(0, 0, 0, 0.4)',
-                    }}
-                    thumbColor={
-                      defaultDark && isDarkMode
-                        ? colors.LIGHT
-                        : !defaultDark && isDarkMode
-                          ? colors.LIGHT_HIGHLIGHTED
-                          : defaultDark && !isDarkMode
-                            ? colors.DARK_SHADE
-                            : colors.DARK_LIGHT
-                    }
-                    ios_backgroundColor="#3e3e3e"
-                    onValueChange={handleDeafultDark}
-                    value={defaultDark}
-                  />
-                </View>
+
                 <View
                   style={[
                     styles.inputContainer,
@@ -723,26 +685,23 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                     Push Notification
                   </Text>
                   <Switch
-                    trackColor={{
-                      false: isDarkMode
-                        ? 'rgba(255, 255, 255, 0.2)'
-                        : 'rgba(0, 0, 0, 0.2)',
-                      true: isDarkMode
-                        ? 'rgba(255, 255, 255, 0.2)'
-                        : 'rgba(0, 0, 0, 0.4)',
-                    }}
-                    thumbColor={
-                      pushNoti && isDarkMode
-                        ? colors.LIGHT
-                        : !pushNoti && isDarkMode
-                          ? colors.LIGHT_HIGHLIGHTED
-                          : pushNoti && !isDarkMode
-                            ? colors.DARK_SHADE
-                            : colors.DARK_LIGHT
-                    }
-                    ios_backgroundColor="#3e3e3e"
                     onValueChange={handlePushNoti}
                     value={pushNoti}
+                    circleSize={20}
+                    barHeight={25}
+                    backgroundActive={isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'}
+                    backgroundInactive={isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.4)'}
+                    circleActiveColor={isDarkMode ? colors.LIGHT : colors.DARK}
+                    circleInActiveColor={isDarkMode ? colors.DARK : colors.LIGHT}
+                    changeValueImmediately={true}                    
+                    innerCircleStyle={{ alignItems: "center", justifyContent: "center" }} 
+                    outerCircleStyle={{}} 
+                    renderActiveText={false}
+                    renderInActiveText={false}
+                    switchLeftPx={2} 
+                    switchRightPx={2} 
+                    switchWidthMultiplier={2} 
+                    switchBorderRadius={30}
                   />
                 </View>
               </View>
@@ -758,11 +717,11 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
         <View style={styles.profileConatiner}>
           <View style={styles.profileDp}>
             <View style={styles.dp}>
-                <FontAwesome5Icon
-                  name={defaultIndex === 0 ? 'user-astronaut' : 'user-graduate'}
-                  size={84}
-                  color={colors.DARK}
-                />
+              <FontAwesome5Icon
+                name={defaultIndex === 0 ? 'user-astronaut' : 'user-graduate'}
+                size={84}
+                color={colors.DARK}
+              />
             </View>
             <View style={styles.gap20}>
               <View>
@@ -995,7 +954,7 @@ const styles = StyleSheet.create({
     gap: 25,
   },
   dp: {
-    position: 'relative',
+    /*     position: 'relative', */
     width: 130,
     aspectRatio: 0.9,
     borderRadius: 100,
@@ -1009,7 +968,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     opacity: 0.8,
-    zIndex: 1500,
   },
   name: {
     fontFamily: fonts.Bree,

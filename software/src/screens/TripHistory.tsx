@@ -5,18 +5,13 @@ import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   Dimensions,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   View,
-  Animated,
-  TouchableOpacity,
-  useWindowDimensions,
   FlatList,
 } from 'react-native';
 import {ThemeContext} from '../context/ThemeContext';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {colors} from '../style/colors';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Entypo from 'react-native-vector-icons/Entypo';

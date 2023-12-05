@@ -104,7 +104,7 @@ const FareChart = () => {
   const setPrice = (distance: number) => {
     if (distance < 4) {
       return 20;
-    } else if (distance < 7) {
+    } else if (distance < 6.5) {
       return 30;
     } else if (distance < 9) {
       return 40;
@@ -322,6 +322,7 @@ const styles = StyleSheet.create({
     shadowColor: colors.DARK,
     alignItems: 'center',
     justifyContent: 'flex-start',
+    backgroundColor: "red",
   },
   header: {
     margin: 25,
@@ -332,6 +333,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     flexDirection: 'row',
     paddingHorizontal: 10,
+    opacity: 1,
   },
   moduleTitle: {
     fontFamily: fonts.Bree,
@@ -342,6 +344,7 @@ const styles = StyleSheet.create({
   },
   back: {
     zIndex: 50,
+    padding: 10,
   },
   sortContainer: {
     flex: 1,
@@ -354,6 +357,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 1,
     marginBottom: 280,
+    opacity: 1,
+    zIndex: 10000,
   },
   history: {
     flex: 1,
@@ -366,6 +371,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.LIGHT_HIGHLIGHTED,
     marginBottom: 15,
+    opacity: 1,
+    zIndex: 15000,
+
   },
   historyIcon: {
     padding: 5,
@@ -375,11 +383,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.KarmaBold,
     fontSize: 17,
   },
-  tranactionId: {
-    fontFamily: fonts.Karma,
-    fontSize: 12,
-    opacity: 0.7,
-  },
+  // tranactionId: {
+  //   fontFamily: fonts.Karma,
+  //   fontSize: 12,
+  //   opacity: 0.7,
+  // },
   historyLabel: {flex: 1.7},
   historyDetails: {flex: 1, alignItems: 'flex-end'},
 });

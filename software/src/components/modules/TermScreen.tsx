@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
   },
   back: {
     zIndex: 50,
+    padding: 10,
   },
   body: {
     paddingHorizontal: 20,

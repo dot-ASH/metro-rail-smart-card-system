@@ -55,10 +55,10 @@ const CustomDialog = ({
         <Text style={[styles.title]}> {title}</Text>
         <Text style={[styles.dialogText]}>{text}</Text>
         <View style={styles.bottomBar}>
-          <TouchableOpacity onPress={onCancle}>
+          <TouchableOpacity onPress={onCancle} style={{padding: 10}}>
             <FontAwesome6Icon name="xmark" size={28} color={colors.DARK} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={onConfirm}>
+          <TouchableOpacity onPress={onConfirm} style={{padding: 10}}>
             <FontAwesome6Icon name="check" size={28} color={colors.DARK} />
           </TouchableOpacity>
         </View>

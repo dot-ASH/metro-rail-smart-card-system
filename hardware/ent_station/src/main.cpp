@@ -225,7 +225,7 @@ int calculateTrip(String to, String id) {
   int distance = abs(staionFromValue - stationToValue);
   if (distance < 4) {
     return 20;
-  } else if (distance < 7) {
+  } else if (distance < 6.5) {
     return 30;
   } else if (distance < 9) {
     return 40;
@@ -313,10 +313,10 @@ void loop() {
     if (result == 201) {
       Serial.println("You are granted");
     }
+    tag = "";
+    rfid.PICC_HaltA();
+    rfid.PCD_StopCrypto1();
   }
-  tag = "";
-  rfid.PICC_HaltA();
-  rfid.PCD_StopCrypto1();
+  delay(1000);
 }
-delay(1000);
-}
+

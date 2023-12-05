@@ -7,7 +7,6 @@ import {
   Dimensions,
   FlatList,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -15,8 +14,6 @@ import {
 } from 'react-native';
 import {ThemeContext} from '../context/ThemeContext';
 import {colors} from '../style/colors';
-import CustomModal from '../components/modules/CustomModal';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {fonts} from '../style/fonts';
 import supabase from '../data/supaBaseClient';
@@ -31,10 +28,10 @@ interface TransDataProp {
   created_at: string;
 }
 
-function TranHistory({navigation}: any): JSX.Element {
-  const {darkMode, toggleOffDarkMode} = useContext(ThemeContext);
+function TranHistory(): JSX.Element {
+  const {darkMode } = useContext(ThemeContext);
   const {user, refresh} = useUserInfo();
-  const [visible, setVisible] = useState<boolean>();
+  // const [visible, setVisible] = useState<boolean>();
   const [dropDownOpen, setDropDownOpen] = useState(false);
   const [sortValue, setSortValue] = useState(null);
   const [transData, setTransData] = useState<TransDataProp[]>([]);
@@ -161,15 +158,15 @@ function TranHistory({navigation}: any): JSX.Element {
           ArrowDownIconComponent={() => (
             <Entypo name="chevron-down" size={16} style={textStyle} />
           )}
-          ArrowUpIconComponent={({style}) => (
+          ArrowUpIconComponent={() => (
             <Entypo name="chevron-up" size={16} style={textStyle} />
           )}
-          TickIconComponent={({style}) => (
+          TickIconComponent={() => (
             <Entypo name="check" size={16} style={textStyle} />
           )}
         />
       </View>
-      {transData.length > 1 ? (
+      {transData.length > 0 ? (
         <View style={styles.historyContainer}>
           <FlatList
             data={changeSort()}

@@ -188,7 +188,8 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   back: {
-    zIndex: 50,
+    zIndex: 50,   
+    padding: 10,
   },
   body: {
     paddingHorizontal: 20,
