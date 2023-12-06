@@ -12,9 +12,11 @@
 #include <algorithm>
 #include <ssid.h>
 
-#define LED_BUILTIN 2
-#define SERVO_PIN D1
+#define SERVO_PIN D2
 #define STATION_CODE "M11"
+#define RED_LED_PIN D0
+#define GREEN_LED_PIN D1
+#define BUZZER_PIN D8
 
 constexpr uint8_t RST_PIN = D3;
 constexpr uint8_t SS_PIN = D4;
@@ -27,6 +29,21 @@ int pos = 0;
 
 Servo myservo;
 Supabase db;
+
+void success() {
+  digitalWrite(GREEN_LED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(GREEN_LED_PIN, LOW);
+}
+
+void error() {
+  digitalWrite(RED_LED_PIN, HIGH);
+  digitalWrite(BUZZER_PIN, HIGH);
+
+  delay(1000);
+  digitalWrite(BUZZER_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
+}
 
 String toText(int textNumber) {
   int number = textNumber * secretKey;
@@ -207,6 +224,17 @@ int calculateTrip(String id) {
   }
 }
 
+String getUserIndex(String tag) {
+  String read =
+      db.from("cards").select("user_index").eq("tag_id", tag).doSelect();
+  DynamicJsonDocument doc(400);
+  deserializeJson(doc, read);
+  JsonObject obj = doc[0];
+  String value = obj["user_index"];
+  db.urlQuery_reset();
+  return value;
+}
+
 int checkBlck(String id) {
   String read = db.from("suspend").select("*").eq("user_index", id).doSelect();
   DynamicJsonDocument doc(400);
@@ -236,10 +264,19 @@ void setup() {
   Serial.println("");
   delay(1000);
 
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
   db.begin(supabase_url, anon_key);
 }
 
 void loop() {
+
+  digitalWrite(RED_LED_PIN, LOW);
+  digitalWrite(GREEN_LED_PIN, LOW);
+  digitalWrite(BUZZER_PIN, LOW);
+
   if (!rfid.PICC_IsNewCardPresent()) {
     return;
   }
@@ -248,21 +285,33 @@ void loop() {
     for (byte i = 0; i < 4; i++) {
       tag += rfid.uid.uidByte[i];
     }
-    String text = readBalance(tag);
+    String userId = getUserIndex(tag);
+
+    if (userId == "null") {
+      Serial.println("Not a valid Card");
+      error();
+      return;
+    }
+
+    String text = readBalance(userId);
     int balance = decrypt(text, shift);
-    if (checkBlck(tag) < 1) {
+    if (checkBlck(userId) < 1) {
       openGate();
-      int cost = calculateTrip(tag);
+      success();
+      int cost = calculateTrip(userId);
       int remaining = balance - cost;
-      dataSend(cost, tag);
-      writeBalance(remaining, tag);
+      dataSend(cost, userId);
+      writeBalance(remaining, userId);
+      Serial.println("Thank you!");
     } else {
       Serial.println("You are blocked");
-      // BUZZER AND RED LIGHT
+      error();
     }
     tag = "";
     rfid.PICC_HaltA();
     rfid.PCD_StopCrypto1();
   }
-  delay(1000);
+  tag = "";
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
 }

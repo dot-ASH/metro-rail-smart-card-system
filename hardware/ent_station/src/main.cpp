@@ -12,9 +12,11 @@
 #include <algorithm>
 #include <ssid.h>
 
-#define LED_BUILTIN 2
-#define SERVO_PIN D1
+#define SERVO_PIN D2
 #define STATION_CODE "UN"
+#define RED_LED_PIN D0
+#define GREEN_LED_PIN D1
+#define BUZZER_PIN D8
 
 constexpr uint8_t RST_PIN = D3;
 constexpr uint8_t SS_PIN = D4;
@@ -27,6 +29,21 @@ int pos = 0;
 
 Servo myservo;
 Supabase db;
+
+void success() {
+  digitalWrite(GREEN_LED_PIN, HIGH);
+  delay(1000);
+  digitalWrite(GREEN_LED_PIN, LOW);
+}
+
+void error() {
+  digitalWrite(RED_LED_PIN, HIGH);
+  digitalWrite(BUZZER_PIN, HIGH);
+
+  delay(1000);
+  digitalWrite(BUZZER_PIN, LOW);
+  digitalWrite(RED_LED_PIN, LOW);
+}
 
 String toText(int textNumber) {
   int number = textNumber * secretKey;
@@ -218,6 +235,17 @@ int readStationValue(String staionCode) {
   return value;
 }
 
+String getUserIndex(String tag) {
+  String read =
+      db.from("cards").select("user_index").eq("tag_id", tag).doSelect();
+  DynamicJsonDocument doc(400);
+  deserializeJson(doc, read);
+  JsonObject obj = doc[0];
+  String value = obj["user_index"];
+  db.urlQuery_reset();
+  return value;
+}
+
 int calculateTrip(String to, String id) {
   String stationFrom = readFromWhere(id);
   int staionFromValue = readStationValue(stationFrom);
@@ -253,7 +281,7 @@ void handleUnpaid(int balance, String id) {
     writeBalance(remaingBalance, id);
   } else {
     Serial.println("How did he/she escape");
-    // BUZZER AND RED LIGHT
+    error();
   }
 }
 
@@ -278,10 +306,18 @@ void setup() {
   Serial.println("");
   delay(1000);
 
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
   db.begin(supabase_url, anon_key);
 }
 
 void loop() {
+  digitalWrite(RED_LED_PIN, LOW);
+  digitalWrite(GREEN_LED_PIN, LOW);
+  digitalWrite(BUZZER_PIN, LOW);
+
   if (!rfid.PICC_IsNewCardPresent())
     return;
   if (rfid.PICC_ReadCardSerial()) {
@@ -289,34 +325,52 @@ void loop() {
     for (byte i = 0; i < 4; i++) {
       tag += rfid.uid.uidByte[i];
     }
-    String text = readBalance(tag);
+    String userId = getUserIndex(tag);
+
+    if (userId == "null") {
+      Serial.println("Not a valid Card");
+      error();
+      return;
+    }
+
+    String text = readBalance(userId);
     int balance = decrypt(text, shift);
 
-    if (checkBlck(tag) >= 1) {
+    if (checkBlck(userId) >= 1) {
       Serial.println("You are blocked");
-      // BUZZER AND RED LIGHT
+      error();
+      return;
+    }
+
+    if (checkBlck(userId) >= 1) {
+      Serial.println("You are blocked");
+      error();
       return;
     }
 
     if (balance <= 100) {
       Serial.println("You don't have any money");
-      // BUZZER AND RED LIGHT
+      error();
       return;
     }
 
-    if (checkOnGoing(tag) > 0) {
-      handleUnpaid(balance, tag);
+    if (checkOnGoing(userId) > 0) {
+      handleUnpaid(balance, userId);
     }
+
     openGate();
     String randWord = generateRandomWord();
-    int result = dataSend(tag, randWord);
+    int result = dataSend(userId, randWord);
     if (result == 201) {
       Serial.println("You are granted");
+      success();
     }
+
     tag = "";
     rfid.PICC_HaltA();
     rfid.PCD_StopCrypto1();
   }
-  delay(1000);
+  tag = "";
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
 }
-

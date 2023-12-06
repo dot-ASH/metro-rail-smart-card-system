@@ -14,7 +14,14 @@ RSI -> D3
 
 ```
 # SERVO -> ESP8266
-INPUT -> D1 
+INPUT -> D2 
 GND -> G
 3.3-5V -> VIN
+```
+
+```
+# LED & BUZZER
+RED -> D0
+BLUE -> D1
+BUZZER -> D8
 ```
