@@ -81,8 +81,8 @@ test.js
 /software/assets/
 
 # Hardware
-/hardware/wifi/.pio/
-/hardware/wifi/.vscode/
-/hardware/wifi/.cache/
-/hardware/wifi/include/
+/hardware/*/.pio/
+/hardware/*/.vscode/
+/hardware/*/.cache/
+/hardware/*/include/
 
