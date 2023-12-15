@@ -84,5 +84,5 @@ test.js
 /hardware/*/.pio/
 /hardware/*/.vscode/
 /hardware/*/.cache/
-/hardware/*/include/
+/hardware/*/include/*
 

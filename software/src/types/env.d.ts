@@ -8,4 +8,8 @@ declare module '@env' {
   export const UPLOAD_PRE: string;
   export const CLOUD_NAME: string;
   export const SHIFT: number;
+  export const EMAIL_TEMPLATE: string;
+  export const EMAIL_SERVICE: string;
+  export const EMAIL_PUBLIC: string;
+
 }

@@ -101,7 +101,6 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
 
   const [editForm, setEditForm] = useState({
     newName: '',
-    newEmail: '',
   });
 
   const [dialogInfo, setDialogInfo] = useState({
@@ -273,7 +272,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
   const editProfile = async () => {
     clearCustoms();
     let errorLog = '';
-    editForm.newName === '' && editForm.newEmail === ''
+    editForm.newName === ''
       ? (errorLog = "You haven't made any changes")
       : null;
 
@@ -285,13 +284,7 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
           .update({ name: editForm.newName })
           .eq('id', user[defaultIndex]?.id);
         error ? (errorLog = 'Somethings wrong! try again') : null;
-      } else if (editForm.newEmail) {
-        const { error } = await supabase
-          .from('user')
-          .update({ email: editForm.newEmail })
-          .eq('id', user[defaultIndex]?.id);
-        error ? (errorLog = 'Somethings wrong! try again') : null;
-      }
+      } 
       setIfLoading(false);
       setAlertText('Your profile has been edited');
     } else {
@@ -575,20 +568,6 @@ function Profile({ navigation }: NavigationScreenProp): JSX.Element {
                     }
                     placeholder={user[defaultIndex].name}
                     placeholderTextColor={isDarkMode ? colors.LIGHT_ALT : colors.DARK}
-                  />
-                </View>
-
-                <View style={[styles.inputContainer, { width: '80%' }]}>
-                  <Text style={[textStyle, styles.label]}>Email: </Text>
-                  <TextInput
-                    style={[textStyle, styles.textInput]}
-                    value={editForm.newEmail}
-                    onChangeText={value =>
-                      onChangeEditHandler(value, 'newEmail')
-                    }
-                    placeholder={user[defaultIndex].email}
-                    placeholderTextColor={isDarkMode ? colors.LIGHT_ALT : colors.DARK}
-
                   />
                 </View>
                 <TouchableOpacity

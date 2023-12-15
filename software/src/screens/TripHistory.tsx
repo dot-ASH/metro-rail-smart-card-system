@@ -21,10 +21,6 @@ import supabase from '../data/supaBaseClient';
 import moment from 'moment';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 
-// interface stationData {
-//   station_name: string;
-//   distance: string;
-// }
 
 interface TripDataProps {
   id: number;
@@ -119,7 +115,7 @@ function TripHistory(): JSX.Element {
             color={isDarkMode ? colors.LIGHT : colors.DARK}
           />
           <Text style={[textStyle, styles.label, {fontSize: 14}]}>
-            {station_code_to.station_name}
+            {station_code_from.station_name}
           </Text>
         </View>
         <View
@@ -136,7 +132,7 @@ function TripHistory(): JSX.Element {
             style={{transform: [{rotate: '90deg'}]}}
           />
           <Text style={[textStyle, styles.label, {fontSize: 14}]}>
-            {station_code_from.station_name}
+            {station_code_to.station_name}
           </Text>
         </View>
 

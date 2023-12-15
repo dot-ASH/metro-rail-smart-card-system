@@ -75,7 +75,7 @@ function Home({ navigation }: any): JSX.Element {
             console.log('insert received!', payload.new.type);
             if (payload.new.type == 'ongoing') {
               setOngoing(true);
-               sendNotification(user[defaultIndex].name);
+              sendNotification(user[defaultIndex].name);
             }
           }
         )
@@ -181,8 +181,8 @@ function Home({ navigation }: any): JSX.Element {
           color={isDarkMode ? colors.LIGHT_SHADE : colors.LIGHT_HIGHLIGHTED}
         />
       ),
-      /*    onModulePress: (event: any) => modalNav(event, "HowTos"),  */
-      onModulePress: () => sendNotification("Metro Rider"),
+      onModulePress: (event: any) => modalNav(event, "HowTos"),
+
     },
     {
       text: 'Rules and convention to follow!',

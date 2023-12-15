@@ -17,12 +17,14 @@ import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
 import { fonts } from '../style/fonts';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/MainStack';
-import { compareSHA } from '../security/encryp';
+import { compareSHA, sha256HashPin } from '../security/encryp';
 import { useUserInfo } from '../context/AuthContext';
 import CustomAlert from '../components/CustomAlert';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Customloading from '../components/CustomLoading';
 import supabase from '../data/supaBaseClient';
+import Chance from "chance";
+import sendmail from '../data/sendMail';
 
 type homeScreenNavigationProp = NativeStackNavigationProp<
   MainStackParamList,
@@ -42,6 +44,7 @@ function VerifyScreen({ navigation }: homeScreenProp): JSX.Element {
   const [isBlocked, setBlock] = useState<boolean>(false);
   const [count, setCount] = useState<number>(1);
   const isDarkMode = darkMode;
+  const chance = new Chance();
   const defaultIndex = user[0]?.default_index;
   const backgroundStyle = {
     backgroundColor: isDarkMode ? colors.DARK : colors.LIGHT,
@@ -120,6 +123,33 @@ function VerifyScreen({ navigation }: homeScreenProp): JSX.Element {
     }
   };
 
+  const handleForgetPin = async () => {
+    setLoading(true);
+    let randomInt = chance.integer({ min: 10000, max: 99999 });
+    let secureNum = await sha256HashPin(randomInt.toString());
+    let userPhn = user[defaultIndex]?.phn_no;
+    let email = user[defaultIndex]?.email;
+    const mailPin = String(randomInt);
+
+
+    const { error: userPinUpdateError } = await supabase
+      .from("user_data")
+      .update({
+        verify_pin: secureNum,
+      })
+      .eq('phn_no', userPhn);
+
+    if (userPinUpdateError) {
+      console.log("Error adding user: ", userPinUpdateError.message);
+      return;
+    }
+    console.log(userPhn, randomInt,secureNum);
+    sendmail({ email: email, pin: mailPin });
+    refreshModule();
+    setAlertText('Check your email');
+    setLoading(false);
+  }
+
   useEffect(() => {
     if (user[defaultIndex]) {
       getBlocked();
@@ -127,8 +157,7 @@ function VerifyScreen({ navigation }: homeScreenProp): JSX.Element {
   }, [defaultIndex, getBlocked, user]);
 
   useEffect(() => {
-/*     console.log(user);  */
-    user[defaultIndex] ? setLoading(false) : (refreshModule() ,setLoading(true));
+    user[defaultIndex] ? setLoading(false) : (refreshModule(), setLoading(true));
   }, [defaultIndex, user]);
 
   useEffect(() => {
@@ -215,7 +244,7 @@ function VerifyScreen({ navigation }: homeScreenProp): JSX.Element {
                 />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleForgetPin}>
               <Text style={[styles.forget, textStyle]}>forget PIN?</Text>
             </TouchableOpacity>
           </View>
@@ -331,9 +360,11 @@ const styles = StyleSheet.create({
     color: colors.LIGHT,
     opacity: 0.9,
     fontSize: 16,
-    marginBottom: 10,
+    marginVertical: 10,
     textAlign: 'center',
     textDecorationLine: 'underline',
+    maxWidth: 150,
+    alignSelf: 'center',
   },
 });
 
