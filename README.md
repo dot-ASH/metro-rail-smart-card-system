@@ -1,7 +1,7 @@
 
  ![image](docs/metro_rider_banner.png)
 
-<p align='center' style="font-size: 44px; margin: 1rem;"><b>Metro Rider</b></p>
+<p align='center' style="font-size: 60px; margin: 1rem;"><b>Metro Rider</b></p>
 
 _GUI application for metro rail card management with online transaction system built with `react native`, `typescript`,  `platformIo`,  and `supabase.js` (*For Educational Purpose)_
 
@@ -12,7 +12,7 @@ _GUI application for metro rail card management with online transaction system b
 - **Online Transaction System**
 - **User Profile Management**
 - **Notifications**
-- **Security Features** _for More [[Security Implementation]]_
+- **Security Features** _for More [Security Implementation](docs/SecurityImplementation)_
 
 
-![image](./metro_rider_info.png)
+![image](docs/metro_rider_info.png)
