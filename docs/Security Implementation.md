@@ -18,8 +18,54 @@ Secure authentication, strong encryption, transparent user data, elimination of 
 ### 3. Algorithms:
 ---
 - **Cryptography:** 
-	-  **SHA-256:** [The Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International](https://www.researchgate.net/figure/The-generation-of-a-SHA-256-hash-value-for-a-long-message_fig1_349744176) [accessed 13 Dec, 2023] demonstrates the real-time application to calculate the hash value for a very long message. The algorithm is used to encrypt the authentication values across our system.
-	- **Enhanced Cipher hashing:** The cipher hashing with some enchained secure feature is required at the time of two-way hashing. The main goal for enhancing the cipher is to add a secure shift value as well as a secure algorithm code for cross-platform applications ( Mobile software, admin panel, and hardware) within our system. ![[SHA256.png]]
+	-  **SHA-256:** [The Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International](https://www.researchgate.net/figure/The-generation-of-a-SHA-256-hash-value-for-a-long-message_fig1_349744176) [accessed 13 Dec, 2023] demonstrates the real-time application to calculate the hash value for a very long message. The algorithm is used to encrypt the authentication values across our system.![[SHA256.png]]
+	- **Enhanced Cipher hashing:** The cipher hashing with some enchained secure feature is required at the time of two-way hashing. The main goal for enhancing the cipher is to add a secure shift value as well as a secure algorithm code for cross-platform applications ( Mobile software, admin panel, and hardware) within our system. 
+``` 
+1: function ToText(textNumber: number)  
+2: number ← textNumber × secretKey  
+3: digitMap ← [′a′,′ b′,′ c′,′ d′,′ e′,′ f ′,′ g′,′ h′,′ i′,′ j′]  
+4: while number > 0 do  
+5: digit ← number mod 10  
+6: textRepresentation ← digitMap[digit] + textRepresentation  
+7: number ← ⌊number/10⌋  
+8: end while  
+9: return textRepresentation  
+10: end function  
+11: function ToNumber(text: string)  
+12: digitMap ← [′a′,′ b′,′ c′,′ d′,′ e′,′ f ′,′ g′,′ h′,′ i′,′ j′]  
+13: arrayLength ← length of digitMap  
+14: for all character in text do  
+15: for all element in digitMap do  
+16: if element is equal to character then  
+17: result ← result + index of element  
+18: end if  
+19: end for  
+20: end for  
+21: finalResult ← parseInt(result)  
+22: return absolute value of(finalResult/secretKey) rounded down  
+23: end function  
+24: function Encrypt(textNumber: number)  
+25: text ← ToText(textNumber)  
+26: for all character in text do  
+27: if character is uppercase then  
+28: result ← result + character shifted by(shift −′ A′) mod 26 +′ A′  
+29: else  
+30: result ← result + character shifted by(shift −′ a′) mod 26 +′ a′  
+31: end if  
+32: end for  
+33: return result  
+34: end function  
+35: function Decrypt(text: string)  
+36: for all character in text do  
+37: if character is uppercase then  
+38: decipherText ← decipherText + character shifted by(shift +′ A′) mod 26 +′ A′ 
+39: else  
+40: decipherText ← decipherText + character shifted by(shift +′ a′) mod 26 +′ a′ 
+41: end if  
+42: end for  
+43: return ToNumber(CipherText)
+44: end function
+```
 
 - **Authentication and Authorization:** For most of the part, we used  [Supbase Authentication](https://supabase.com/docs/guides/auth) system which provides strong and secure authentication and validation ways to manage the user data.  Also, we used Twilio to verify our mobile number in addition to Supabase Auth.
 
@@ -58,4 +104,4 @@ Secure authentication, strong encryption, transparent user data, elimination of 
 
 ```
 
-- Intrusion Detection
+- **Intrusion Detection:** For intruder detection, we developed an alert system  that notified subscribers on every trip. If someone tries to impersonate them  and try to use their identity to start traveling the alert rings and the user will  be notified. Thus from there, they can block the card of the intruder. By doing  this the intruder gets stuck at the station as they are blocked from the system from doing entry/exit.
