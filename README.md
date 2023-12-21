@@ -1,7 +1,7 @@
 
  ![image](docs/metro_rider_banner.png)
 
-<p align='center' style="font-size: 60px; margin: 1rem;"><b>Metro Rider</b></p>
+<h1 align='center' style="margin: 1rem;"><b>Metro Rider</b></h1>
 
 _GUI application for metro rail card management with online transaction system built with `react native`, `typescript`,  `platformIo`,  and `supabase.js` (*For Educational Purpose)_
 
@@ -16,3 +16,4 @@ _GUI application for metro rail card management with online transaction system b
 
 
 ![image](docs/metro_rider_info.png)
+_the logo is based on dmtcl metrorail logo, for more [DMTCL](https://dmtcl.gov.bd/),_
