@@ -13,7 +13,8 @@ _GUI application for metro rail card management with online transaction system b
 - **User Profile Management**
 - **Notifications**
 - **Security Features** _for More [Security Implementation](docs/SecurityImplementation)_
-
+- **Admin Panel** _for More [Metro Rider Admin Panel](https://github.com/dot-ASH/metro-rider)_
 
 ![image](docs/metro_rider_info.png)
 _the logo is based on dmtcl metrorail logo, for more [DMTCL](https://dmtcl.gov.bd/),_
+
