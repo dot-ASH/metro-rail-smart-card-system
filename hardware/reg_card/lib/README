@@ -8,7 +8,7 @@ MOSI -> D7
 MISO -> D6
 IRQ ->
 GRD -> G
-RSI -> D3
+RST -> D3
 3.3V -> 3V
 ```
 

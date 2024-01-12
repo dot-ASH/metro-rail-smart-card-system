@@ -30,13 +30,15 @@ int pos = 0;
 Servo myservo;
 Supabase db;
 
-void success() {
+void success()
+{
   digitalWrite(GREEN_LED_PIN, HIGH);
   delay(1000);
   digitalWrite(GREEN_LED_PIN, LOW);
 }
 
-void error() {
+void error()
+{
   digitalWrite(RED_LED_PIN, HIGH);
   digitalWrite(BUZZER_PIN, HIGH);
 
@@ -45,11 +47,13 @@ void error() {
   digitalWrite(RED_LED_PIN, LOW);
 }
 
-String toText(int textNumber) {
+String toText(int textNumber)
+{
   int number = textNumber * secretKey;
   char digitMap[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
   String textRepresentation = "";
-  while (number > 0) {
+  while (number > 0)
+  {
     int digit = number % 10;
     textRepresentation = digitMap[digit] + textRepresentation;
     number /= 10;
@@ -57,13 +61,17 @@ String toText(int textNumber) {
   return textRepresentation;
 }
 
-int toNumber(String text) {
+int toNumber(String text)
+{
   String result = "";
   char digitMap[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
   int arrayLength = sizeof(digitMap) / sizeof(digitMap[0]);
-  for (int i = 0; i < text.length(); i++) {
-    for (int j = 0; j < arrayLength; j++) {
-      if (digitMap[j] == text[i]) {
+  for (int i = 0; i < text.length(); i++)
+  {
+    for (int j = 0; j < arrayLength; j++)
+    {
+      if (digitMap[j] == text[i])
+      {
         result = result + String(j);
       }
     }
@@ -72,10 +80,12 @@ int toNumber(String text) {
   return abs(finalResult / secretKey);
 }
 
-String encrypt(int textNumber, int s) {
+String encrypt(int textNumber, int s)
+{
   String text = toText(textNumber);
   String result = "";
-  for (int i = 0; i < text.length(); i++) {
+  for (int i = 0; i < text.length(); i++)
+  {
     if (isupper(text[i]))
       result += char(int(text[i] + s - 'A') % 26 + 'A');
     else
@@ -84,9 +94,11 @@ String encrypt(int textNumber, int s) {
   return result;
 }
 
-int decrypt(String text, int s) {
+int decrypt(String text, int s)
+{
   String decypherText = "";
-  for (int i = 0; i < text.length(); i++) {
+  for (int i = 0; i < text.length(); i++)
+  {
     if (isupper(text[i]))
       decypherText += char((int(text[i] - s - 'A') + 26) % 26 + 'A');
     else
@@ -95,18 +107,21 @@ int decrypt(String text, int s) {
   return toNumber(decypherText);
 }
 
-String generateRandomWord() {
+String generateRandomWord()
+{
   char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   int lettersCount = sizeof(letters) - 1;
   String randomWord = "";
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 20; i++)
+  {
     char randomChar = letters[random(lettersCount)];
     randomWord += randomChar;
   }
   return randomWord;
 }
 
-int dataSend(String user_id, String transId) {
+int dataSend(String user_id, String transId)
+{
   String payload = "";
   long long userId = atoll(user_id.c_str());
   StaticJsonDocument<1024> doc;
@@ -122,7 +137,8 @@ int dataSend(String user_id, String transId) {
   return status_code;
 }
 
-String readBalance(String id) {
+String readBalance(String id)
+{
   String read =
       db.from("user_data").select("balance").eq("user_index", id).doSelect();
   String jsonString = read;
@@ -134,7 +150,8 @@ String readBalance(String id) {
   return balance;
 }
 
-int checkOnGoing(String id) {
+int checkOnGoing(String id)
+{
   String read = db.from("transaction")
                     .select("*")
                     .eq("user_index", id)
@@ -146,16 +163,21 @@ int checkOnGoing(String id) {
   return jsonObjectLength;
 }
 
-void openGate() {
-  for (pos = 0; pos <= 180; pos += 5) {
+void openGate()
+{
+  for (pos = 0; pos <= 180; pos += 2)
+  {
     myservo.write(pos);
   }
-  for (pos = 180; pos >= 0; pos -= 5) {
+  delay(1000);
+  for (pos = 180; pos >= 0; pos -= 2)
+  {
     myservo.write(pos);
   }
 }
 
-int checkBlck(String id) {
+int checkBlck(String id)
+{
   String read = db.from("suspend").select("*").eq("user_index", id).doSelect();
   DynamicJsonDocument doc(400);
   deserializeJson(doc, read);
@@ -163,7 +185,8 @@ int checkBlck(String id) {
   return jsonObjectLength;
 }
 
-String prevDestination(String id) {
+String prevDestination(String id)
+{
   String read = db.from("transaction")
                     .select("*")
                     .eq("user_index", id)
@@ -177,7 +200,8 @@ String prevDestination(String id) {
   return value;
 }
 
-String readFromWhere(String id) {
+String readFromWhere(String id)
+{
   String read = db.from("transaction")
                     .select("*")
                     .eq("user_index", id)
@@ -191,7 +215,8 @@ String readFromWhere(String id) {
   return value;
 }
 
-int writePrev(int cost, String user_id) {
+int writePrev(int cost, String user_id)
+{
   String payload = "";
   long long userId = atoll(user_id.c_str());
   StaticJsonDocument<1024> doc;
@@ -209,7 +234,8 @@ int writePrev(int cost, String user_id) {
   return status_code;
 }
 
-int writeBalance(int balance, String user_id) {
+int writeBalance(int balance, String user_id)
+{
   String encBalance = encrypt(balance, shift);
   String payload = "";
   long long userId = atoll(user_id.c_str());
@@ -224,7 +250,8 @@ int writeBalance(int balance, String user_id) {
   return status_code;
 }
 
-int readStationValue(String staionCode) {
+int readStationValue(String staionCode)
+{
   String read =
       db.from("station").select("*").eq("station_code", staionCode).doSelect();
   DynamicJsonDocument doc(400);
@@ -235,7 +262,8 @@ int readStationValue(String staionCode) {
   return value;
 }
 
-String getUserIndex(String tag) {
+String getUserIndex(String tag)
+{
   String read =
       db.from("cards").select("user_index").eq("tag_id", tag).doSelect();
   DynamicJsonDocument doc(400);
@@ -246,53 +274,77 @@ String getUserIndex(String tag) {
   return value;
 }
 
-int calculateTrip(String to, String id) {
+int calculateTrip(String to, String id)
+{
   String stationFrom = readFromWhere(id);
   int staionFromValue = readStationValue(stationFrom);
   int stationToValue = readStationValue(to);
   int distance = abs(staionFromValue - stationToValue);
-  if (distance < 4) {
+  if (distance < 4)
+  {
     return 20;
-  } else if (distance < 6.5) {
+  }
+  else if (distance < 6.5)
+  {
     return 30;
-  } else if (distance < 9) {
+  }
+  else if (distance < 9)
+  {
     return 40;
-  } else if (distance < 11) {
+  }
+  else if (distance < 11)
+  {
     return 50;
-  } else if (distance < 13) {
+  }
+  else if (distance < 13)
+  {
     return 60;
-  } else if (distance < 14) {
+  }
+  else if (distance < 14)
+  {
     return 70;
-  } else if (distance < 16) {
+  }
+  else if (distance < 16)
+  {
     return 80;
-  } else if (distance < 19) {
+  }
+  else if (distance < 19)
+  {
     return 90;
-  } else {
+  }
+  else
+  {
     return 100;
   }
 }
 
-void handleUnpaid(int balance, String id) {
+void handleUnpaid(int balance, String id)
+{
   String lastStation = prevDestination(id);
-  if (lastStation != "null") {
+  if (lastStation != "null")
+  {
     int cost = calculateTrip(lastStation, id);
     int remaingBalance = balance - cost;
     writePrev(cost, id);
     writeBalance(remaingBalance, id);
-  } else {
+  }
+  else
+  {
     Serial.println("How did he/she escape");
     error();
   }
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   pinMode(2, OUTPUT);
   WiFi.begin(ssid, password);
   delay(100);
   Serial.println("");
   Serial.println("Connecting");
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     delay(500);
     Serial.print(".");
   }
@@ -311,66 +363,80 @@ void setup() {
   pinMode(BUZZER_PIN, OUTPUT);
 
   db.begin(supabase_url, anon_key);
-}
-
-void loop() {
   digitalWrite(RED_LED_PIN, LOW);
   digitalWrite(GREEN_LED_PIN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
+}
 
+void clearCard()
+{
+  tag = "";
+  rfid.PICC_HaltA();
+  rfid.PCD_StopCrypto1();
+}
+
+void loop()
+{
   if (!rfid.PICC_IsNewCardPresent())
     return;
-  if (rfid.PICC_ReadCardSerial()) {
+
+  if (rfid.PICC_ReadCardSerial())
+  {
     Serial.println("Scanned");
-    for (byte i = 0; i < 4; i++) {
+    for (byte i = 0; i < 4; i++)
+    {
       tag += rfid.uid.uidByte[i];
     }
     String userId = getUserIndex(tag);
 
-    if (userId == "null") {
+    if (userId == "null")
+    {
       Serial.println("Not a valid Card");
       error();
+      clearCard();
       return;
     }
 
     String text = readBalance(userId);
     int balance = decrypt(text, shift);
 
-    if (checkBlck(userId) >= 1) {
+    if (checkBlck(userId) >= 1)
+    {
       Serial.println("You are blocked");
       error();
+      clearCard();
       return;
     }
 
-    if (checkBlck(userId) >= 1) {
+    if (checkBlck(userId) >= 1)
+    {
       Serial.println("You are blocked");
       error();
+      clearCard();
       return;
     }
 
-    if (balance <= 100) {
+    if (balance <= 100)
+    {
       Serial.println("You don't have any money");
       error();
+      clearCard();
       return;
     }
 
-    if (checkOnGoing(userId) > 0) {
+    if (checkOnGoing(userId) > 0)
+    {
       handleUnpaid(balance, userId);
     }
-
+    success();
     openGate();
     String randWord = generateRandomWord();
     int result = dataSend(userId, randWord);
-    if (result == 201) {
+    if (result == 201)
+    {
       Serial.println("You are granted");
-      success();
     }
-
-    tag = "";
-    rfid.PICC_HaltA();
-    rfid.PCD_StopCrypto1();
+    clearCard();
   }
-  tag = "";
-  rfid.PICC_HaltA();
-  rfid.PCD_StopCrypto1();
+  delay(1000);
 }
