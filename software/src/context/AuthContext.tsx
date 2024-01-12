@@ -43,16 +43,16 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: [],
-  setUsers: () => { },
+  setUsers: () => {},
   refresh: false,
-  refreshModule: () => { },
+  refreshModule: () => {},
 });
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
   const [user, setUsers] = useState<userData[]>([]);
   const [sessionPhn, setSessionPhn] = useState<String | undefined>();
   const [sessionMail, setSessionMail] = useState<String | undefined>();
@@ -65,7 +65,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const getUserData = useCallback(async () => {
     console.log('refreshed');
     if (sessionPhn) {
-      let { data, error } = await supabase
+      let {data, error} = await supabase
         .from('user')
         .select(
           'id, name,address, email, image_url, nid, station(id, distance, station_code, station_name), phn_no, default_index, user_data(user_index, balance, verify_pin)',
@@ -80,7 +80,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
     if (sessionMail) {
-      let { data, error } = await supabase
+      let {data, error} = await supabase
         .from('user')
         .select(
           'id, name, address, email, image_url, nid,  station(id, distance, station_code, station_name), phn_no,default_index, user_data(user_index, balance, verify_pin)',
@@ -98,7 +98,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const { data } = await supabase.auth.getSession();
+      const {data} = await supabase.auth.getSession();
       /*      console.log(data?.session?.user.email); */
       data?.session?.user.phone
         ? setSessionPhn(data?.session?.user.phone)
@@ -110,16 +110,22 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkSubcription = async () => {
     try {
-      supabase.channel('custom-update-channel')
+      supabase
+        .channel('custom-update-channel')
         .on(
           'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'user_data', filter: `phn_no=eq.${user[0]?.phn_no}` },
-          (payload) => {
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'user_data',
+            filter: `phn_no=eq.${user[0]?.phn_no}`,
+          },
+          payload => {
             refreshModule();
-            console.log('Change received!', payload)
-          }
+            console.log('Change received!', payload);
+          },
         )
-        .subscribe()
+        .subscribe();
     } catch (error) {
       console.error('Error fetching sub data:', error);
     }
@@ -137,7 +143,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   });
 
   return (
-    <AuthContext.Provider value={{ setUsers, user, refreshModule, refresh }}>
+    <AuthContext.Provider value={{setUsers, user, refreshModule, refresh}}>
       {children}
     </AuthContext.Provider>
   );
@@ -147,4 +153,4 @@ const useUserInfo = (): AuthContextType => {
   return useContext(AuthContext);
 };
 
-export { AuthProvider, useUserInfo };
+export {AuthProvider, useUserInfo};

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-native/no-inline-styles */
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   DevSettings,
   Dimensions,
@@ -18,16 +18,16 @@ import {
   View,
 } from 'react-native';
 import CustomDigitKeyboard from '../components/CustomDigitKeyboard';
-import { colors } from '../style/colors';
-import { ThemeContext } from '../context/ThemeContext';
+import {colors} from '../style/colors';
+import {ThemeContext} from '../context/ThemeContext';
 import FontAwesome6Icon from 'react-native-vector-icons/FontAwesome6';
-import { fonts } from '../style/fonts';
+import {fonts} from '../style/fonts';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MainStackParamList } from '../navigation/MainStack';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {MainStackParamList} from '../navigation/MainStack';
 import CustomAlert from '../components/CustomAlert';
 import supabase from '../data/supaBaseClient';
-import { useUserInfo } from '../context/AuthContext';
+import {useUserInfo} from '../context/AuthContext';
 import Customloading from '../components/CustomLoading';
 import RNRestart from 'react-native-restart';
 
@@ -47,12 +47,12 @@ if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 }
-function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
-  const { darkMode } = useContext(ThemeContext);
+function OTPScreen({navigation}: verifyScreenProps): JSX.Element {
+  const {darkMode} = useContext(ThemeContext);
   const [phone, setPhone] = useState('');
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [verified, setVerified] = useState(false);
-  const { setUsers, refreshModule } = useUserInfo();
+  const {setUsers, refreshModule} = useUserInfo();
   const [emailAddress, setEmail] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [hasResendOTP, setResendOTP] = useState(false);
@@ -102,19 +102,19 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
       .eq('phn_no', '88' + phone);
 
     if (response.data && response.data?.length > 0) {
-      // const {data, error} = await supabase.auth.signInWithOtp({
-      //   phone: '+88' + phone,
-      // });
+      const {data, error} = await supabase.auth.signInWithOtp({
+        phone: '+88' + phone,
+      });
 
-      // if (!error) {
-      setVerified(true);
-      setLoading(false);
-      setAlertText('OTP has been sent');
-      // } else {
-      //  setLoading(false);
-      //   console.log(error);
-      //   setAlertText(error.message);
-      // }
+      if (!error) {
+        setVerified(true);
+        setLoading(false);
+        setAlertText('OTP has been sent');
+      } else {
+        setLoading(false);
+        console.log(error);
+        setAlertText(error.message);
+      }
     } else {
       setLoading(false);
       setAlertText("You aren't registered");
@@ -122,7 +122,7 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
   };
 
   const checkAuth = async () => {
-    const { error } = await supabase.auth.getSession();
+    const {error} = await supabase.auth.getSession();
     if (!error) {
       return true;
     } else {
@@ -132,21 +132,19 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
   };
 
   const checkOTP = async () => {
-
     if (input.length === 6) {
-
       setLoading(true);
-      const { data, error } = hasResendOTP
+      const {data, error} = hasResendOTP
         ? await supabase.auth.verifyOtp({
-          email: emailAddress,
-          token: input,
-          type: 'email',
-        })
+            email: emailAddress,
+            token: input,
+            type: 'email',
+          })
         : await supabase.auth.verifyOtp({
-          phone: '+88' + phone,
-          token: input,
-          type: 'sms',
-        });
+            phone: '+88' + phone,
+            token: input,
+            type: 'sms',
+          });
 
       if (error) {
         setLoading(false);
@@ -162,12 +160,12 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
         setLoading(false);
         setAlertText('Login Successful, signing in...');
         setTimeout(() => {
-        refreshModule();
+          refreshModule();
           navigation.push('Verify');
-        }, 2000)
+        }, 2000);
       } else {
         setLoading(false);
-        setAlertText("Wrong input");
+        setAlertText('Wrong input');
       }
     } else {
       setAlertText('You must enter 6 number');
@@ -199,7 +197,7 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
 
     if (response.data && response.data[0]?.email) {
       setEmail(response.data[0]?.email);
-      const { error } = await supabase.auth.signInWithOtp({
+      const {error} = await supabase.auth.signInWithOtp({
         email: response.data[0]?.email,
       });
       if (error) {
@@ -251,7 +249,7 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
           <View
             style={[
               styles.widthFull,
-              { marginBottom: verified ? '-8%' : '20%' },
+              {marginBottom: verified ? '-8%' : '20%'},
             ]}>
             <View style={styles.emailBox}>
               <TextInput
@@ -308,7 +306,7 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
                   borderBottomColor: colors.VERIFIED,
                 }}
                 onPress={resendOTP}>
-                <Text style={[styles.confirmText, { color: colors.VERIFIED }]}>
+                <Text style={[styles.confirmText, {color: colors.VERIFIED}]}>
                   Resend
                 </Text>
               </TouchableOpacity>
@@ -319,7 +317,7 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
                   borderBottomColor: colors.ERROR,
                 }}
                 onPress={resetPhone}>
-                <Text style={[styles.confirmText, { color: colors.ERROR }]}>
+                <Text style={[styles.confirmText, {color: colors.ERROR}]}>
                   Reset
                 </Text>
               </TouchableOpacity>
@@ -327,7 +325,7 @@ function OTPScreen({ navigation }: verifyScreenProps): JSX.Element {
           </View>
         </View>
 
-        <View style={[styles.flexCol, { display: verified ? 'flex' : 'none' }]}>
+        <View style={[styles.flexCol, {display: verified ? 'flex' : 'none'}]}>
           <View style={styles.textBox}>
             <View style={styles.textInput}>
               <Text style={styles.input}>{letters[0] ? letters[0] : ' '}</Text>
